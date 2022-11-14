@@ -1,11 +1,13 @@
 #!/bin/expect
 
-exec rm -rf ~/.ssh
+set timeout 60
+set node [lindex $argv 0]
 
-spawn ssh-keygen -t rsa
+spawn scp -r ../../.. $node:/var/ysm/
 
 expect {
     ".ssh/id_rsa\)" { send "\r"; exp_continue }
+    "Overwrite (y/n)?" { send "y\r"; exp_continue }
     "empty for no passphrase\)" { send "\r"; exp_continue }
     "passphrase again" { send "\r"; exp_continue }
 }

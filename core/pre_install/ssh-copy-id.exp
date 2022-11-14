@@ -1,0 +1,12 @@
+#! /bin/expect
+
+set timeout 30
+set node [lindex $argv 0]
+set password [lindex $argv 1]
+
+spawn ssh-copy-id  -f $node
+
+expect {
+        "(yes/no)?" { send "yes\r"; exp_continue}
+        "password" { send "$password\r"; exp_continue}
+}
