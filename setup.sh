@@ -123,7 +123,7 @@ function process_params() {
 
 function setup() {
     process_params $@
-    ./core/main.sh pre_install
+    ./pre.sh $YUM_URL $DOCKER_URL
     # 设置yum源, 具体的安装放在对应的功能下面
 }
 

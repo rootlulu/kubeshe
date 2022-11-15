@@ -3,10 +3,10 @@
 # The kubeshe that one click install kubernets with shell script
 
 ##
-setup.sh: 参数校验，help参数，工具函数，yum源设置等
-pre.sh：yum工具安装，配置免密登陆，传输文件等
-install.sh： 正式安装流程：配置机器环境等
-post.sh：  收尾工作 如test等
+- setup.sh: 参数校验，help参数，工具函数，yum源设置等
+- pre.sh：yum工具安装，配置免密登陆，传输文件等
+- install.sh： 正式安装流程：配置机器环境等
+- post.sh：  收尾工作 如test等
 
 ## tips
 
