@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC1017
 
 # 1. help, verbose等
 # 2. yum等源数据
@@ -8,28 +9,30 @@
 set -eu
 # set -o pipefail
 
+PATH="/var/ysm"
+APP="KubeShe"
 
 function help() {
     cat <<EOF
-    Usage: ${BASH_SOURCE[0]} {-v|verbose} --ssh <username> <password>
-            <--k8s_nodes> <master:node1:node2:...>
-            [--yum_source <yum_url>] [--docker_source <docker_url>]
+Usage: ${BASH_SOURCE[0]} {-v|verbose} --ssh <username> <password>
+        <--k8s_nodes> <master:node1:node2:...>
+        [--yum_source <yum_url>] [--docker_source <docker_url>]
 
-        -h | --help                     show help message
+    -h | --help                     show help message
 
-    Required:
-        --ssh <username>
-              <passwd>                  set the shh connection
-    
-    Optional:
-        -v | -verbose                   verbose output
-        --yum_source yum_url            the customized yum image source
-        --docker_source docker_url      the customized docker image source
+Required:
+    --ssh <username>
+            <passwd>                  set the shh connection
 
-    Exit status:
-        0  if OK,
-        1  if required params is not provided,
-        2  if other errors raised.
+Optional:
+    -v | -verbose                   verbose output
+    --yum_source yum_url            the customized yum image source
+    --docker_source docker_url      the customized docker image source
+
+Exit status:
+    0  if OK,
+    1  if required params is not provided,
+    2  if other errors raised.
 EOF
 }
 
@@ -96,7 +99,7 @@ function process_params() {
                 shift
                 ;;
             --docker_source)
-                # todo supprort yum resource setting in the future.
+                # todo supprort yum resource setting in the fut ure.
                 # todo default is aliyun.
                 DOCKER_URL=${1-}
                 valid_empty_value $param $DOCKER_URL
@@ -122,8 +125,8 @@ function process_params() {
 }
 
 function setup() {
-    process_params $@
-    ./pre.sh $YUM_URL $DOCKER_URL
+    process_params "$@"
+    ./pre.sh "${APP}" "${YUM_URL}" "${DOCKER_URL}" "${PATH}" "${PASSWD}" "${NODES}"
     # 设置yum源, 具体的安装放在对应的功能下面
 }
 
@@ -168,7 +171,7 @@ EOF
     yum -y install docker-ce-18.06.3.ce-3.el7
     systemctl enable docker && systemctl start docker
     sudo mkdir -p /etc/docker
-    sudo tee /etc/docker/daemon.json <<-'EOF'
+    sudo tee /etc/docker/daemon.json <<EOF
     {
     "exec-opts": ["native.cgroupdriver=systemd"],	
     "registry-mirrors": ["https://du3ia00u.mirror.aliyuncs.com"],	
@@ -240,11 +243,11 @@ function teardown() {
 
 
 function main(){
-    setup $@
-    install_k8s
+    setup "$@"
+    # install_k8s
     install_others
     teardown
 }
 
 
-main $@
+main "$@"
