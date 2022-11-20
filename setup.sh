@@ -1,4 +1,5 @@
 #!/bin/bash
+#!/bin/bash
 # shellcheck disable=SC1017
 
 # 1. help, verbose等
@@ -9,13 +10,24 @@
 set -eu
 # set -o pipefail
 
-PATH="/var/ysm"
-APP="KubeShe"
+PATH_="/var/ysm"
+APP="kubeshe"
+
+chmod -R 700 "${PATH_}/${APP}"
+
+USERNAME=
+PASSWD=
+NODES=
+MASTER=
+WORKERS=
+YUM_URL=
+DOCKER_URL=
+
 
 function help() {
     cat <<EOF
 Usage: ${BASH_SOURCE[0]} {-v|verbose} --ssh <username> <password>
-        <--k8s_nodes> <master:node1:node2:...>
+        --k8s_nodes <master:node1:node2:...>
         [--yum_source <yum_url>] [--docker_source <docker_url>]
 
     -h | --help                     show help message
@@ -23,6 +35,7 @@ Usage: ${BASH_SOURCE[0]} {-v|verbose} --ssh <username> <password>
 Required:
     --ssh <username>
             <passwd>                  set the shh connection
+    --k8s_nodes <master:node1:node2:...>    the master and the nodes separated by :
 
 Optional:
     -v | -verbose                   verbose output
@@ -83,9 +96,9 @@ function process_params() {
                 fi
                 nodes_str=${1-}
                 valid_empty_value $param $nodes_str
-                nodes_array=(${nodes_str//:/ })
-                MASTER=$nodes_array[0]
-                WORKERS=${nodes_array[@]:1:${#nodes_array[@]}-1}
+                NODES=(${nodes_str//:/ })
+                MASTER=${NODES}
+                WORKERS=${NODES[@]:1:${#NODES[@]}-1}
                 shift
                 ;;
             -v | --verbose)
@@ -126,7 +139,7 @@ function process_params() {
 
 function setup() {
     process_params "$@"
-    ./pre.sh "${APP}" "${YUM_URL}" "${DOCKER_URL}" "${PATH}" "${PASSWD}" "${NODES}"
+    source ./pre.sh
     # 设置yum源, 具体的安装放在对应的功能下面
 }
 
@@ -237,7 +250,7 @@ function install_others() {
 } 
 function teardown() {
     # 部署一个nginx服务，测试集群是否工作正常
-    ./core/main.sh post_install
+    # ./core/main.sh post_install
     :
 }
 

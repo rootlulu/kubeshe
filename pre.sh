@@ -1,16 +1,28 @@
 #!/bin/bash
 # shellcheck disable=SC1017
 
-APP=$1
-YUM_URL=$2
-DOCKER_URL=$3
-PATH=$4
-PASSWD=$5
-NODES=${@:5}
+
+_get_distribution() {
+    local lsb_dist=
+    if [[ -r /etc/os-release ]]; then
+        # shellcheck source=/dev/null
+        lsb_dist="$(. /etc/os-release && echo "$ID")"
+    fi
+
+    # perform some very rudimentary platform detection
+    lsb_dist="$(echo "$lsb_dist" | tr '[:upper:]' '[:lower:]')"
+
+    # Returning an empty string here should be alright since the
+    # case statements don't act unless you provide an actual value
+    echo "$lsb_dist"
+}
 
 function set_yum() {
+    if [[ -z ${YUM_URL} ]]; then
+        YUM_URL="http://mirrors.aliyun.com"
+    fi
     local dist
-    dist=$(get_distribution)
+    dist=$(_get_distribution)
     case "${dist}" in
     centos)
         # https://stackoverflow.com/questions/6363441/check-if-a-file-exists-with-a-wildcard-in-a-shell-script
@@ -39,12 +51,12 @@ function set_docker() {
 
 function tar_send_and_send() {
     local node
-    for node in ${NODES}; do
-        tar -zvcf "${APP}.tar.gz" "${PATH}"
-        scp "${PATH}/${APP}.tar.gz": "${node}:${PATH}"
-        ssh "${node}:${PATH}" <<"EOF"
-        tar -zvxf "${PATH}/${APP}.tar.gz"
-        "${PATH}/${APP}.setup.sh --ssh" ${USERNAME} ${PASSWD} --yum_source ${YUM_URL} \
+    for node in ${WORKERS}; do
+        tar -zvcf "${APP}.tar.gz" "${PATH_}"
+        scp "${PATH_}/${APP}.tar.gz": "${node}:${PATH_}"
+        ssh "${node}:${PATH_}" <<"EOF"
+        tar -zvxf "${PATH_}/${APP}.tar.gz"
+        "${PATH_}/${APP}.setup.sh --ssh" ${USERNAME} ${PASSWD} --yum_source ${YUM_URL} \
         --docker_source ${DOCKER_URL}
 EOF
     done
@@ -55,18 +67,27 @@ function untar_and_run() {
 }
 
 function set_no_passwd() {
-    ./core/ssh/main.sh "${PATH}" "${PASSWD}" "${NODES}"
+    # shellcheck source=/dev/null
+    . ./core/ssh/main.sh
 }
 
-function mian() {
+function pre_main() {
     set_yum
     set_docker
 
-    yum install ifconfig -y
+    yum install net-tools -y
     if [[ $(ifconfig ens18 | grep 'inet ' | cut -d " " -f 10) == "${MASTER}" ]]; then
         set_no_passwd
         tar_send_and_run
-        ssh
+        # ssh
     fi
 
 }
+
+# Invoke main with args if not sourced
+# Approach via: https://stackoverflow.com/a/28776166/8787985
+if ! (return 0 2>/dev/null); then
+    echo "ERROR: Must run this shell in current process."
+fi
+
+pre_main
