@@ -11,12 +11,9 @@ done
 
 for node in ${WORKERS}; do
     ssh -o StrictHostKeyChecking=no "${node}" cat <<EOF
-    if ! [[ -e ${PATH_}/${APP} ]]; then
-        echo "666666666666666666666"
-        mkdir -p "${PATH_}/${APP}"
-    else
-        echo "777777777777777777777"
-        rm -rf "${PATH_}/${APP}"
+    if [[ -e ${PATH_} ]]; then
+        rm -rf "${PATH_}"
+    mkdir -p "${PATH_}"
     fi
 EOF
     scp -o StrictHostKeyChecking=no -r "${PATH_}/${APP}" "${node}:${PATH_}"

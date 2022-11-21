@@ -49,14 +49,23 @@ function set_docker() {
     :
 }
 
-function tar_send_and_send() {
+function tar_send_and_run() {
     local node
+    local file
+    file="${APP}.tar.gz"
     for node in ${WORKERS}; do
-        tar -zvcf "${APP}.tar.gz" "${PATH_}"
-        scp "${PATH_}/${APP}.tar.gz": "${node}:${PATH_}"
-        ssh "${node}:${PATH_}" <<"EOF"
-        tar -zvxf "${PATH_}/${APP}.tar.gz"
-        "${PATH_}/${APP}.setup.sh --ssh" ${USERNAME} ${PASSWD} --yum_source ${YUM_URL} \
+        cd "${PATH_}" || return 1
+        if [[ -e  ${file} ]];then
+            rm -rf "${file}"
+        fi
+        tar -zvcf "${file}" "${APP}"
+        scp "${file}" "${node}:${PATH_}"
+        ssh "${node}" <<"EOF"
+        cd "${PATH_}"
+        # ls | grep -v ${file} | xargs rm
+        rm -rf "!(${file})"
+        tar -zvxf "${file}"
+        "${PATH_}/${APP}/setup.sh --ssh" ${USERNAME} ${PASSWD} --yum_source ${YUM_URL} \
         --docker_source ${DOCKER_URL}
 EOF
     done
