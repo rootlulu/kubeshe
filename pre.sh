@@ -49,24 +49,29 @@ function set_docker() {
     :
 }
 
-function tar_send_and_run() {
+function tar_send_and_untar() {
     local node
     local file
     file="${APP}.tar.gz"
-    for node in ${WORKERS}; do
+    # shellcheck disable=SC2068
+    for node in ${WORKERS[@]}; do
         cd "${PATH_}" || return 1
         if [[ -e  ${file} ]];then
             rm -rf "${file}"
         fi
         tar -zvcf "${file}" "${APP}"
         scp "${file}" "${node}:${PATH_}"
-        ssh "${node}" <<"EOF"
-        cd "${PATH_}"
-        # ls | grep -v ${file} | xargs rm
-        rm -rf "!(${file})"
-        tar -zvxf "${file}"
-        "${PATH_}/${APP}/setup.sh --ssh" ${USERNAME} ${PASSWD} --yum_source ${YUM_URL} \
-        --docker_source ${DOCKER_URL}
+        # if run a command in a here doc way, the limit string(like EOF) can't be quoted.
+        # otherwise it cuts no ice with expansion.
+        # if run command immediately, use double-quotes but not single-quotes, it worked.
+        # user -tt to force as a tty ans exit. some anwered -T, but it not worked.
+        ssh -tto StrictHostKeyChecking=no "${node}" <<EOF
+        ls
+        cd ${PATH_} 
+        # ls | grep -v ${file} | xargs rm -rf
+        rm -rf !(${file})
+        tar -zvxf ${file}
+        exit
 EOF
     done
 }
@@ -87,7 +92,7 @@ function pre_main() {
     yum install net-tools -y
     if [[ $(ifconfig ens18 | grep 'inet ' | cut -d " " -f 10) == "${MASTER}" ]]; then
         set_no_passwd
-        tar_send_and_run
+        tar_send_and_untar
         # ssh
     fi
 

@@ -145,7 +145,7 @@ function setup() {
     # 设置yum源, 具体的安装放在对应的功能下面
 }
 
-function install_k8s() {
+function install_masters() {
     ./core/main.sh install
     yum install libffi-devel openssl-devel expect ipset ipvsadm ntpdate tree vim netstat -y
     ntpdate time.windows.com
@@ -233,7 +233,7 @@ EOF
     --kubernetes-version v1.18.0 \
     --service-cidr=10.96.0.0/12 \
     --pod-network-cidr=10.244.0.0/16
-    sudo chown $(id -u):$(id -g) $HOME/.kube/config
+    sudo chown "$(id -u):$(id -g)" $HOME/.kube/config
 
     # worker节点
     kubeadm join 192.168.18.100:6443 --token jv039y.bh8yetcpo6zeqfyj \
@@ -246,9 +246,15 @@ EOF
     kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
     
 }
-function install_others() {
-    # 其它插件安装，如helm等
-    :
+function install_nodes() {
+    # shellcheck disable=SC2068
+    for node in ${WORKERS[@]}; do
+        ssh -tto StrictHostKeyChecking=no "${node}" <<EOF
+        ${PATH_}/${APP}/setup.sh --ssh ${USERNAME} ${PASSWD} --yum_source ${YUM_URL}
+        --docker_source ${DOCKER_URL}
+        exit
+EOF
+    done
 } 
 function teardown() {
     # 部署一个nginx服务，测试集群是否工作正常
@@ -259,8 +265,8 @@ function teardown() {
 
 function main(){
     setup "$@"
-    # install_k8s
-    install_others
+    # install_masters
+    # install_nodes
     teardown
 }
 
