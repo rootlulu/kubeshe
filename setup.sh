@@ -1,6 +1,7 @@
 #!/bin/bash
-#!/bin/bash
 # shellcheck disable=SC1017
+# shellcheck disable=SC2034
+# shellcheck disable=SC2128
 
 # 1. help, verbose等
 # 2. yum等源数据
@@ -17,9 +18,9 @@ chmod -R 700 "${PATH_}/${APP}"
 
 USERNAME=
 PASSWD=
-NODES=
+declare -a NODES
 MASTER=
-WORKERS=
+declare -a WORKERS
 YUM_URL=
 DOCKER_URL=
 
@@ -96,9 +97,10 @@ function process_params() {
                 fi
                 nodes_str=${1-}
                 valid_empty_value $param $nodes_str
-                NODES=(${nodes_str//:/ })
+                NODES=("${nodes_str//:/ }")
                 MASTER=${NODES}
-                WORKERS=${NODES[@]:1:${#NODES[@]}-1}
+                # this is a array.
+                WORKERS=("${NODES[@]:1:${#NODES[@]}-1}")
                 shift
                 ;;
             -v | --verbose)
