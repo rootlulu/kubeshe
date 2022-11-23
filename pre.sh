@@ -85,6 +85,9 @@ function set_no_passwd() {
     . ./core/ssh/main.sh
 }
 
+function install_tools() {
+    yum net-tools gcc gcc-c++ yum-utils -y
+}
 function pre_main() {
     set_yum
     set_docker
