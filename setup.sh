@@ -1,15 +1,10 @@
 #!/bin/bash
-# shellcheck disable=SC1017
-# shellcheck disable=SC2034
-# shellcheck disable=SC2128
-
 # 1. help, verbose等
 # 2. yum等源数据
 # 3. helm等安装需求
 
-
 set -eu
-# set -o pipefail
+set -o pipefail
 
 PATH_="/var/ysm"
 APP="kubeshe"
@@ -20,10 +15,12 @@ USERNAME=
 PASSWD=
 declare -a NODES
 MASTER=
+MASTER_HOSTNAME="k8s-master"
 declare -a WORKERS
+WOEKWE_HOSTNAME_PREFIX="k8s-node"
+declare -A NAME_NODE_MAP
 YUM_URL=
 DOCKER_URL=
-
 
 function help() {
     cat <<EOF
@@ -55,7 +52,7 @@ EOF
 
 function valid_empty_value() {
     local k=${1}
-    shift 
+    shift
     if [[ $# -le 0 ]]; then
         echo "the $k's value is empty"
         exit 1
@@ -65,11 +62,10 @@ function valid_empty_value() {
                 echo "the $k's value is empty"
                 exit 1
             fi
-        shift
+            shift
         done
     fi
 }
-
 
 function process_params() {
     local ssh_provided=false
@@ -78,54 +74,66 @@ function process_params() {
     while [[ $# -gt 0 ]]; do
         param=$1
         shift
-        case $param in 
-            -h | --help)
-                help
-                exit 0
-                ;;
-            --ssh)
-                if [[ -n $param ]]; then
-                    ssh_provided=true
+        case ${param} in
+        -h | --help)
+            help
+            exit 0
+            ;;
+        --ssh)
+            if [[ -n ${param} ]]; then
+                ssh_provided=true
+            fi
+            USERNAME=${1-}
+            PASSWD=${2-}
+            valid_empty_value "${param}" "${USERNAME}" "$PASSWD"
+            shift
+            shift
+            :
+            ;;
+        --k8s_nodes)
+            if [[ -n ${param} ]]; then
+                nodes_provided=true
+            fi
+            local nodes_str=${1-}
+            valid_empty_value "${param}" "${nodes_str}"
+            # shellcheck disable=SC2206
+            # NODES=(${nodes_str//:/ })
+            local true_ifs=${IFS}
+            IFS=":"
+            # shellcheck disable=SC2206
+            NODES=(${nodes_str})
+            IFS=${true_ifs}
+            for num in $(seq 1 $((${#NODES[@]}))); do
+                if [[ ${num} = 1 ]]; then
+                    MASTER=${NODES[${num} - 1]}
+                    NAME_NODE_MAP[${MASTER_HOSTNAME}]=${MASTER}
+                else
+                    WORKERS+=("${NODES[${num} - 1]}")
+                    NAME_NODE_MAP[${WOEKWE_HOSTNAME_PREFIX}$((num - 1))]=${NODES[${num} - 1]}
                 fi
-                USERNAME=${1-}
-                PASSWD=${2-}
-                valid_empty_value $param $USERNAME "$PASSWD"
-                shift
-                shift
-                :
-                ;;
-            --k8s_nodes)
-                if [[ -n $param ]]; then
-                    nodes_provided=true
-                fi
-                nodes_str=${1-}
-                valid_empty_value $param $nodes_str
-                NODES=("${nodes_str//:/ }")
-                MASTER=${NODES}
-                # this is a array.
-                WORKERS=("${NODES[@]:1:${#NODES[@]}-1}")
-                shift
-                ;;
-            -v | --verbose)
-                set -x
-                ;;
-            --yum_source)
-                YUM_URL=${1-}
-                valid_empty_value $param $YUM_URL
-                shift
-                ;;
-            --docker_source)
-                # todo supprort yum resource setting in the fut ure.
-                # todo default is aliyun.
-                DOCKER_URL=${1-}
-                valid_empty_value $param $DOCKER_URL
-                shift
-                ;;
-            *)
-                echo -e "No valid pararms provided. \n"
-                help
-                exit 1
-                ;;
+            done
+            shift
+            ;;
+        -v | --verbose)
+            set -x
+            ;;
+        --yum_source)
+            YUM_URL=${1-}
+            valid_empty_value "${param}" "${YUM_URL}"
+            shift
+            ;;
+        --docker_source)
+            # todo supprort yum resource setting in the fut ure.
+            # todo default is aliyun.
+            DOCKER_URL=${1-}
+            valid_empty_value "${param}" "${DOCKER_URL}"
+            shift
+            ;;
+        *)
+            echo -e "No valid pararms provided. \n"
+            help
+            exit 1
+            ;;
         esac
     done
 
@@ -142,14 +150,24 @@ function process_params() {
 
 function setup() {
     process_params "$@"
-    source ./pre.sh
-    # 设置yum源, 具体的安装放在对应的功能下面
+    . ./pre.sh
 }
 
+function run() {
+    :
+    # . ./install.sh
+    # . ./install_master.sh
+    # . ./install_nodes.sh
+}
 
-function main(){
+function teardown() {
+    :
+    # . ./post.sh
+}
+
+function main() {
     setup "$@"
+    teardown
 }
-
 
 main "$@"

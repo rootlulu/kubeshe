@@ -1,6 +1,4 @@
 #!/bin/bash
-# shellcheck disable=SC1017
-
 
 _get_distribution() {
     local lsb_dist=
@@ -49,14 +47,14 @@ function set_docker() {
     :
 }
 
-function tar_send_and_untar() {
+function tar_cur() {
     local node
     local file
     file="${APP}.tar.gz"
     # shellcheck disable=SC2068
     for node in ${WORKERS[@]}; do
         cd "${PATH_}" || return 1
-        if [[ -e  ${file} ]];then
+        if [[ -e ${file} ]]; then
             rm -rf "${file}"
         fi
         tar -zvcf "${file}" "${APP}"
@@ -65,6 +63,7 @@ function tar_send_and_untar() {
         # otherwise it cuts no ice with expansion.
         # if run command immediately, use double-quotes but not single-quotes, it worked.
         # user -tt to force as a tty ans exit. some anwered -T, but it not worked.
+        # shellcheck disable=SC2087
         ssh -tto StrictHostKeyChecking=no "${node}" <<EOF
         ls
         cd ${PATH_} 
@@ -80,7 +79,7 @@ function untar_and_run() {
     :
 }
 
-function set_no_passwd() {
+function copy_ssh_id_and_send() {
     # shellcheck source=/dev/null
     . ./core/ssh/main.sh
 }
@@ -93,9 +92,11 @@ function pre_main() {
     set_docker
 
     yum install net-tools -y
+    # the current machine.
     if [[ $(ifconfig ens18 | grep 'inet ' | cut -d " " -f 10) == "${MASTER}" ]]; then
-        set_no_passwd
-        tar_send_and_untar
+        # todo: tar current dir. and the expt will send.
+        tar_cur
+        copy_ssh_id_and_send
         # ssh
     fi
 

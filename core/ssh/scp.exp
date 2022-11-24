@@ -1,9 +1,9 @@
 #!/bin/expect
 
 set timeout 60
-set node [lindex $argv 0]
+set remote [lindex $argv 0]
 
-spawn scp -r ../../.. $node:/var/ysm/
+spawn scp -r ../ ${remote}
 
 expect {
     ".ssh/id_rsa\)" { send "\r"; exp_continue }
