@@ -19,5 +19,5 @@ for node in ${WORKERS[@]}; do
     fi
 EOF
     scp -o StrictHostKeyChecking=no -r "${PATH_}/${APP}" "${node}:${PATH_}"
-    ./core/ssh/scp.exp "${node}:${PATH_}"
+    ./core/ssh/scp.exp "${APP}.tar.gz" "${node}:${PATH_}"
 done

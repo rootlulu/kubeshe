@@ -1,9 +1,10 @@
 #!/bin/expect
 
 set timeout 60
-set remote [lindex $argv 0]
+set cur_tar [lindex $argv 0]
+set remote [lindex $argv 1]
 
-spawn scp -r ../ ${remote}
+spawn scp -r ../${cur_tar} ${remote}
 
 expect {
     ".ssh/id_rsa\)" { send "\r"; exp_continue }
