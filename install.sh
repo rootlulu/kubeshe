@@ -1,16 +1,12 @@
 #!/bin/bash
-# shellcheck disable=SC1017
-# shellcheck disable=SC2034
-# shellcheck disable=SC2128
-
-function set_hostname() {
-    # k8s_master k8s_node1 k8s_node2 ...
-    hostnamectl set-hostname "$1"
-}
 
 function set_dns() {
     # set the hosts
-    :
+    cat >> /etc/hosts <<EOF
+    10.251.1.79    etcd_bj.com
+    10.251.1.79    etcd_sh.com
+    10.251.1.79    etcd_gz.com
+EOF
 }
 
 function time_synchronization() {
@@ -134,4 +130,9 @@ function _install_k8s() {
     docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/coredns:v1.8.0
 
     docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/coredns:v1.8.0 registry.cn-hangzhou.aliyuncs.com/google_containers/coredns/coredns:v1.8.0
+}
+
+
+function install_main() {
+    set_dns
 }
