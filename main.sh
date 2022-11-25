@@ -150,6 +150,9 @@ function process_params() {
 
 function setup() {
     process_params "$@"
+    # set yum docker and others. then tar the install package to other nodes and
+    # set all nodes' hostname.
+    # shellcheck source=/dev/null
     . ./pre.sh
 }
 
@@ -162,6 +165,7 @@ function run() {
 
 function teardown() {
     :
+    # shellcheck source=/dev/null
     . ./post.sh
 }
 

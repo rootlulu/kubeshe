@@ -48,9 +48,7 @@ function set_docker() {
 }
 
 function tar_cur() {
-    # local node
-    # local file
-    file="${APP}.tar.gz"
+    local file="${APP}.tar.gz"
     # shellcheck disable=SC2164
     cd ..  &&   tar -zvcf "${file}" "${APP}" && cd -
 }
@@ -64,9 +62,11 @@ function copy_ssh_id_and_send() {
     . ./core/ssh/main.sh
 }
 
-function install_tools() {
-    yum net-tools gcc gcc-c++ yum-utils -y
+function set_host_name(){
+    # shellcheck source=/dev/null
+    . ./core/set_host_name.sh
 }
+
 function pre_main() {
     set_yum
     set_docker
@@ -77,7 +77,7 @@ function pre_main() {
         # todo: tar current dir. and the expt will send.
         tar_cur
         copy_ssh_id_and_send
-        # ssh
+        set_host_name
     fi
 
 }
