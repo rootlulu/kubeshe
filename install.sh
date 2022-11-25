@@ -2,14 +2,14 @@
 
 function set_dns() {
     # set the hosts
-    cat >> /etc/hosts <<EOF
+    cat >>/etc/hosts <<EOF
     10.251.1.79    etcd_bj.com
     10.251.1.79    etcd_sh.com
     10.251.1.79    etcd_gz.com
 EOF
 }
 
-function time_synchronization() {
+function set_time_synchronization() {
     yum install ntpdate -y
     ntpdate time.windows.com
 }
@@ -27,13 +27,13 @@ function colse_selinux_and_swap() {
 
 function ipv4_2_iptables() {
     # shellcheck disable=SC2129
-    echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
-    echo "net.bridge.bridge-nf-call-ip6tables = 1" >> /etc/sysctl.conf
-    echo "net.bridge.bridge-nf-call-iptables = 1" >> /etc/sysctl.conf
-    echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf
-    echo "net.ipv6.conf.default.disable_ipv6 = 1" >> /etc/sysctl.conf
-    echo "net.ipv6.conf.lo.disable_ipv6 = 1" >> /etc/sysctl.conf
-    echo "net.ipv6.conf.all.forwarding = 1"  >> /etc/sysctl.conf
+    echo "net.ipv4.ip_forward = 1" >>/etc/sysctl.conf
+    echo "net.bridge.bridge-nf-call-ip6tables = 1" >>/etc/sysctl.conf
+    echo "net.bridge.bridge-nf-call-iptables = 1" >>/etc/sysctl.conf
+    echo "net.ipv6.conf.all.disable_ipv6 = 1" >>/etc/sysctl.conf
+    echo "net.ipv6.conf.default.disable_ipv6 = 1" >>/etc/sysctl.conf
+    echo "net.ipv6.conf.lo.disable_ipv6 = 1" >>/etc/sysctl.conf
+    echo "net.ipv6.conf.all.forwarding = 1" >>/etc/sysctl.conf
 
     # append the br_netfilter module and make it worked forever.
     modprobe br_netfilter
@@ -42,7 +42,7 @@ function ipv4_2_iptables() {
 
 function open_ipvs() {
     yum -y install ipset ipvsadm
-    cat > /etc/sysconfig/modules/ipvs.modules <<EOF
+    cat >/etc/sysconfig/modules/ipvs.modules <<EOF
         #!/bin/bash
         modprobe -- ip_vs
         modprobe -- ip_vs_rr
@@ -50,20 +50,20 @@ function open_ipvs() {
         modprobe -- ip_vs_sh
         modprobe -- nf_conntrack
 EOF
-    chmod 755 /etc/sysconfig/modules/ipvs.modules 
+    chmod 755 /etc/sysconfig/modules/ipvs.modules
     bash /etc/sysconfig/modules/ipvs.modules
     lsmod | grep -e ip_vs -e nf_conntrack_ipv4
 }
 
 function install_docker() {
     sudo yum remove docker \
-                  docker-client \
-                  docker-client-latest \
-                  docker-common \
-                  docker-latest \
-                  docker-latest-logrotate \
-                  docker-logrotate \
-                  docker-engine
+        docker-client \
+        docker-client-latest \
+        docker-common \
+        docker-latest \
+        docker-latest-logrotate \
+        docker-logrotate \
+        docker-engine
     yum-config-manager --add-repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
     yum makecache fast
     yum -y install docker-ce-3:20.10.8-3.el7.x86_64 docker-ce-cli-1:20.10.8-3.el7.x86_64 containerd.io
@@ -71,12 +71,11 @@ function install_docker() {
     systemctl start docker
     systemctl enable docker
     docker version
-    if ! $?;then
+    if ! $?; then
         exit 2
     fi
 
     # aliyun repo speeded-up
-
     sudo mkdir -p /etc/docker
     sudo tee /etc/docker/daemon.json <<-'EOF'
         {
@@ -99,7 +98,7 @@ EOF
 }
 
 function set_k8s_resource() {
-    cat > /etc/yum.repos.d/kubernetes.repo << EOF
+    cat >/etc/yum.repos.d/kubernetes.repo <<EOF
     [kubernetes]
     name=Kubernetes
     baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64
@@ -132,7 +131,12 @@ function _install_k8s() {
     docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/coredns:v1.8.0 registry.cn-hangzhou.aliyuncs.com/google_containers/coredns/coredns:v1.8.0
 }
 
-
-function install_main() {
+function install_common() {
     set_dns
+    set_time_synchronization
+    colse_selinux_and_swap
+    ipv4_2_iptables
+    open_ipvs
 }
+
+install_common
