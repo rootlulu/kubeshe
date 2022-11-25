@@ -19,7 +19,6 @@ function tar_and_run() {
         # user -tt to force as a tty ans exit. some anwered -T, but it not worked.
         # shellcheck disable=SC2087
         ssh -tto StrictHostKeyChecking=no "${node}" <<EOF
-        ls
         cd ${PATH_} 
         # ls | grep -v ${file} | xargs rm -rf
         rm -rf !(${file})

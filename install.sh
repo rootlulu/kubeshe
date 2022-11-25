@@ -5,7 +5,7 @@
 
 function set_hostname() {
     # k8s_master k8s_node1 k8s_node2 ...
-    hostnamectl set-hostname ${1}
+    hostnamectl set-hostname "$1"
 }
 
 function set_dns() {
