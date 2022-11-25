@@ -162,7 +162,7 @@ function run() {
 
 function teardown() {
     :
-    # . ./post.sh
+    . ./post.sh
 }
 
 function main() {
