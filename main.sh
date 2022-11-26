@@ -158,7 +158,8 @@ function setup() {
 
 function run() {
     :
-    # . ./install.sh
+    # shellcheck source=/dev/null
+    . ./install.sh
     # . ./install_master.sh
     # . ./install_nodes.sh
 }
@@ -171,6 +172,7 @@ function teardown() {
 
 function main() {
     setup "$@"
+    run
     teardown
 }
 

@@ -56,14 +56,13 @@ EOF
 }
 
 function install_docker() {
-    sudo yum remove docker \
-        docker-client \
-        docker-client-latest \
-        docker-common \
-        docker-latest \
-        docker-latest-logrotate \
-        docker-logrotate \
-        docker-engine
+    # uninstall the old version.
+    systemctl stop docker.socket
+    systemctl stop docker
+    systemctl disable docker
+    yum list installed | grep docker | xargs -I {} echo {} | cut -d " " -f 1 | xargs -I {} yum remove {}
+
+    # install another version.
     yum-config-manager --add-repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
     yum makecache fast
     yum -y install docker-ce-3:20.10.8-3.el7.x86_64 docker-ce-cli-1:20.10.8-3.el7.x86_64 containerd.io
@@ -117,7 +116,7 @@ function change_cgroup() {
     :
 }
 
-function _install_k8s() {
+function install_k8s() {
     yum install -y kubelet-1.21.10 kubeadm-1.21.10 kubectl-1.21.10 -y
     systemctl enable kubelet
     docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/kube-apiserver:v1.21.10
@@ -138,6 +137,8 @@ function install_common() {
     ipv4_2_iptables
     open_ipvs
     install_docker
+    set_k8s_resource
+    install_k8s
 }
 
 install_common
