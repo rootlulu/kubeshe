@@ -137,6 +137,7 @@ function install_common() {
     colse_selinux_and_swap
     ipv4_2_iptables
     open_ipvs
+    install_docker
 }
 
 install_common
