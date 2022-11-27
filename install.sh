@@ -121,15 +121,18 @@ function change_cgroup() {
 function install_k8s() {
     yum install -y kubelet-1.21.10 kubeadm-1.21.10 kubectl-1.21.10 -y
     systemctl enable kubelet
-    docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/kube-apiserver:v1.21.10
-    docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/kube-controller-manager:v1.21.10
-    docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/kube-scheduler:v1.21.10
-    docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/kube-proxy:v1.21.10
-    docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/pause:3.4.1
-    docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/etcd:3.4.13-0
-    docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/coredns:v1.8.0
-
-    docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/coredns:v1.8.0 registry.cn-hangzhou.aliyuncs.com/google_containers/coredns/coredns:v1.8.0
+    local wait_installeds
+    local resource="registry.cn-hangzhou.aliyuncs.com/google_containers/"
+    wait_installeds=$(kubeadm config images list)
+    # echo "$wait_installeds" | xargs -n1 | sed "s/k8s.gcr.io\///"
+    for wait_installed in ${wait_installeds}; do
+        echo "The pull url: ${resource}${wait_installed##*/}"
+        # docker pull "${resource}${wait_installed/k8s.gcr.io\//}"
+        docker pull "${resource}${wait_installed##*/}"
+        if [[ ${wait_installed} =~ "coredns" ]]; then
+            docker tag "${resource}${wait_installed##*/}" "${resource}${wait_installed#*/}"
+        fi
+    done
 }
 
 function install_common() {
