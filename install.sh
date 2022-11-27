@@ -15,8 +15,10 @@ function set_time_synchronization() {
 }
 
 function colse_selinux_and_swap() {
-    # close the current session's selinux
+    # close the current session's selinux. there may be a error. so set +e.
+    set +e
     setenforce 0
+    set -e
     # reboot will work.
     sed -i 's/enforcing/disabled/' /etc/selinux/config
     # close the current session's swap
@@ -57,12 +59,15 @@ EOF
 
 function install_docker() {
     # uninstall the old version.
+    set +e
     systemctl stop docker.socket
     systemctl stop docker
     systemctl disable docker
-    yum list installed | grep docker | xargs -I {} echo {} | cut -d " " -f 1 | xargs -I {} yum remove {}
+    yum list installed | grep docker | xargs -I {} echo {} | cut -d " " -f 1 | xargs -I {} yum remove -y {}
+    set -e
 
     # install another version.
+    yum -y install yum-utils
     yum-config-manager --add-repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
     yum makecache fast
     yum -y install docker-ce-3:20.10.8-3.el7.x86_64 docker-ce-cli-1:20.10.8-3.el7.x86_64 containerd.io
@@ -70,9 +75,6 @@ function install_docker() {
     systemctl start docker
     systemctl enable docker
     docker version
-    if ! $?; then
-        exit 2
-    fi
 
     # aliyun repo speeded-up
     sudo mkdir -p /etc/docker
@@ -98,13 +100,13 @@ EOF
 
 function set_k8s_resource() {
     cat >/etc/yum.repos.d/kubernetes.repo <<EOF
-    [kubernetes]
-    name=Kubernetes
-    baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64
-    enabled=1
-    gpgcheck=0
-    repo_gpgcheck=0
-    gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+[kubernetes]
+name=Kubernetes
+baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64
+enabled=1
+gpgcheck=0
+repo_gpgcheck=0
+gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
 EOF
 }
 
