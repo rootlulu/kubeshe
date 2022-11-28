@@ -22,6 +22,14 @@ declare -A NAME_NODE_MAP
 YUM_URL=
 DOCKER_URL=
 
+# deploy kube config
+# shellcheck disable=SC2034
+KUBE_VERSION=v1.21.10
+# shellcheck disable=SC2034
+SERVICE_CIDR="10.96.0.0/16"
+# shellcheck disable=SC2034
+POD_NETWORK_CIDR="10.244.0.0/16"
+
 function help() {
     cat <<EOF
     Support: Only validated in CentOs7 and its kernel is lastest: 5.16.12. And you
@@ -160,7 +168,8 @@ function run() {
     :
     # shellcheck source=/dev/null
     . ./install.sh
-    # . ./install_master.sh
+    # shellcheck source=/dev/null
+    . ./install_master.sh
     # . ./install_nodes.sh
 }
 

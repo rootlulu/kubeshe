@@ -2,11 +2,11 @@
 
 function set_dns() {
     # set the hosts
-    cat >>/etc/hosts <<EOF
-    10.251.1.79    etcd_bj.com
-    10.251.1.79    etcd_sh.com
-    10.251.1.79    etcd_gz.com
+    for node_name in "${!NAME_NODE_MAP[@]}"; do
+        cat >>/etc/hosts <<EOF
+        ${node_name}    ${NAME_NODE_MAP[${node_name}]}
 EOF
+    done
 }
 
 function set_time_synchronization() {
@@ -15,6 +15,8 @@ function set_time_synchronization() {
 }
 
 function colse_selinux_and_swap() {
+    systemctl stop firewalld
+    systemctl disable firewalld
     # close the current session's selinux. there may be a error. so set +e.
     set +e
     setenforce 0
