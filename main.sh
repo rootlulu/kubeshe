@@ -22,6 +22,8 @@ declare -A NAME_NODE_MAP
 YUM_URL=
 DOCKER_URL=
 
+JOIN_CMD_SHELL="_join_cmd.sh"
+
 # deploy kube config
 # shellcheck disable=SC2034
 KUBE_VERSION=v1.21.10
@@ -170,13 +172,15 @@ function run() {
     . ./install.sh
     # shellcheck source=/dev/null
     . ./install_master.sh
+    init_master
+    join_cluster
     # . ./install_nodes.sh
 }
 
 function teardown() {
     :
     # shellcheck source=/dev/null
-    . ./post.sh
+    # . ./post.sh
 }
 
 function main() {
