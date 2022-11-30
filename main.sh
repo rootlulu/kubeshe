@@ -31,6 +31,9 @@ KUBE_VERSION=v1.21.10
 SERVICE_CIDR="10.96.0.0/16"
 # shellcheck disable=SC2034
 POD_NETWORK_CIDR="10.244.0.0/16"
+KUBELET="kubelet-1.21.10"
+KUBEADM="kubeadm-1.21.10"
+KUBECTL="kubectl-1.21.10"
 
 function help() {
     cat <<EOF
@@ -169,12 +172,22 @@ function setup() {
 function run() {
     :
     # shellcheck source=/dev/null
-    . ./install.sh
+    . ./common_install_utils.sh
     # shellcheck source=/dev/null
-    . ./install_master.sh
-    init_master
-    join_cluster
-    # . ./install_nodes.sh
+    if [[ $(ifconfig ens18 | grep 'inet ' | cut -d " " -f 10) == "${MASTER}" ]]; then
+        . ./master_install_utils.sh
+        init_master
+        for node in ${WORKERS[@]}; do
+            ssh -tto StrictHostKeyChecking=no "${node}"  cat <<EOF
+                cd "${PATH_}/${APP}"
+                ./main.sh --ssh ${USERNAME} ${PASSWD} --k8s_nodes $(IFS=:; echo "${NODES[*]}") -v
+                exit
+EOF
+        done
+    else
+        . ./node_install_utils.sh
+        join_cluster
+    fi
 }
 
 function teardown() {

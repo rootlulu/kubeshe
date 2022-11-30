@@ -47,19 +47,11 @@ function set_docker() {
     :
 }
 
-function tar_cur() {
-    local file="${APP}.tar.gz"
-    # shellcheck disable=SC2164
-    cd ..  &&   tar -zvcf "${file}" "${APP}" && cd -
-}
-
-function untar_and_run() {
-    :
-}
-
 function copy_ssh_id_and_send() {
     # shellcheck source=/dev/null
     . ./core/ssh/main.sh
+    copy_id
+    send_file_and_untar
 }
 
 function set_host_name(){
@@ -74,8 +66,6 @@ function pre_main() {
     yum install net-tools -y
     # the current machine.
     if [[ $(ifconfig ens18 | grep 'inet ' | cut -d " " -f 10) == "${MASTER}" ]]; then
-        # todo: tar current dir. and the expt will send.
-        tar_cur
         copy_ssh_id_and_send
         set_host_name
     fi

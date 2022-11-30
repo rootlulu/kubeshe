@@ -1,6 +1,8 @@
 #!/bin/bash
 
 # shellcheck disable=SC2068
+hostnamectl set-hostname "${MASTER_HOSTNAME}"
+
 for node_name in ${!NAME_NODE_MAP[@]}; do
     if [[ ${node_name} != "${MASTER_HOSTNAME}" ]]; then
         # shellcheck disable=SC2087
