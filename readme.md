@@ -1,6 +1,12 @@
 
+# The kubeshe that one click install kubernets with shell script in Centos7
 
-# The kubeshe that one click install kubernets with shell script inCentos7
+> the steps( installing at the master but not salves.):
+1. process the input. which is the common func.
+2. common utils installing.
+3. master installing.
+4. nodes installing in a loop from master with ssh.
+5. extract the trans to a lib func.
 
 ## 1. 一键安装部署k8s，并且有相关的k8s例子。注意以下几点，以确保部署可以成功
 1. 所有机器的用户名密码需要一致

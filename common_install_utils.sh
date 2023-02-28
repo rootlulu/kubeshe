@@ -4,7 +4,7 @@ function set_dns() {
     # set the hosts
     for node_name in "${!NAME_NODE_MAP[@]}"; do
         cat >>/etc/hosts <<EOF
-    ${node_name}    ${NAME_NODE_MAP[${node_name}]}
+    ${NAME_NODE_MAP[${node_name}]} ${node_name}
 EOF
     done
 }

@@ -22,6 +22,10 @@ function init_master() {
     kubeadm token create --ttl 0 --print-join-command > "${PATH_}/${APP}/${JOIN_CMD_SHELL}"
     chmod 700 "${PATH_}/${APP}/${JOIN_CMD_SHELL}"
 
+    # todo
+    scp "${PATH_}/${APP}/${JOIN_CMD_SHELL}" 10.128.170.32:/var/ysm/kubeshe/
+    scp "${PATH_}/${APP}/${JOIN_CMD_SHELL}" 10.128.170.33:/var/ysm/kubeshe/
+
     # deploy the network plugin. can use  flannel, calico, cana and so on.
     # kubectl apply -f" ${PATH_}/${APP}/kubenets/plugins/calico.yml"
 

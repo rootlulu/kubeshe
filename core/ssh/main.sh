@@ -18,7 +18,7 @@ function send_file_and_untar() {
     # shellcheck disable=SC2068
     for node in ${WORKERS[@]}; do
         # shellcheck disable=SC2087
-        ssh -o StrictHostKeyChecking=no "${node}" cat <<EOF
+        ssh -o StrictHostKeyChecking=no "${node}" <<EOF
         if [[ -e ${PATH_} ]]; then
             rm -rf "${PATH_}"
         mkdir -p "${PATH_}"

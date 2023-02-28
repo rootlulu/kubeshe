@@ -170,19 +170,17 @@ function setup() {
 }
 
 function run() {
-    :
+    . ./utils.sh
     # shellcheck source=/dev/null
     . ./common_install_utils.sh
     # shellcheck source=/dev/null
     if [[ $(ifconfig ens18 | grep 'inet ' | cut -d " " -f 10) == "${MASTER}" ]]; then
         . ./master_install_utils.sh
         init_master
-        for node in ${WORKERS[@]}; do
-            ssh -tto StrictHostKeyChecking=no "${node}"  cat <<EOF
-                cd "${PATH_}/${APP}"
-                ./main.sh --ssh ${USERNAME} ${PASSWD} --k8s_nodes $(IFS=:; echo "${NODES[*]}") -v
-                exit
-EOF
+        for node in "${WORKERS[@]}"; do
+            remote_ssh "${node}" \
+            "cd "${PATH_}/${APP}"" \
+            "./main.sh --ssh ${USERNAME} ${PASSWD} --k8s_nodes $(IFS=:; echo "${NODES[*]}") -v"
         done
     else
         . ./node_install_utils.sh
@@ -194,6 +192,7 @@ function teardown() {
     :
     # shellcheck source=/dev/null
     # . ./post.sh
+    echo "finished"
 }
 
 function main() {
