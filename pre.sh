@@ -50,11 +50,10 @@ function set_docker() {
 function copy_ssh_id_and_send() {
     # shellcheck source=/dev/null
     . ./core/ssh/main.sh
-    copy_id
-    send_file_and_untar
+    # send_file_and_untar
 }
 
-function set_host_name(){
+function set_host_name() {
     # shellcheck source=/dev/null
     . ./core/set_host_name.sh
 }
@@ -64,10 +63,14 @@ function pre_main() {
     set_docker
 
     yum install net-tools -y
-    # the current machine.
-    if [[ $(ifconfig ens18 | grep 'inet ' | cut -d " " -f 10) == "${MASTER}" ]]; then
-        copy_ssh_id_and_send
+    # shellcheck source=/dev/null
+    . ./core/core.sh
+    # shellcheck disable=SC2091
+    # if $(isMaster); then
+    if isMaster; then
+        copy_id
         set_host_name
+        send_file_and_untar
     fi
 
 }

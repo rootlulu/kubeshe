@@ -136,8 +136,7 @@ function process_params() {
             shift
             ;;
         --docker_source)
-            # todo supprort yum resource setting in the fut ure.
-            # todo default is aliyun.
+            # todo supprort yum resource setting in the future. default is aliyun.
             DOCKER_URL=${1-}
             valid_empty_value "${param}" "${DOCKER_URL}"
             shift
@@ -179,8 +178,11 @@ function run() {
         init_master
         for node in "${WORKERS[@]}"; do
             remote_ssh "${node}" \
-            "cd "${PATH_}/${APP}"" \
-            "./main.sh --ssh ${USERNAME} ${PASSWD} --k8s_nodes $(IFS=:; echo "${NODES[*]}") -v"
+                "cd "${PATH_}/${APP}"" \
+                "./main.sh --ssh ${USERNAME} ${PASSWD} --k8s_nodes $(
+                    IFS=:
+                    echo "${NODES[*]}"
+                ) -v"
         done
     else
         . ./node_install_utils.sh

@@ -1,20 +1,22 @@
 #!/bin/bash
 
-yum install expect openssl openssh-server openssh-clients -y
-
-./core/ssh/ssh-keygen.exp
-
-function copy_id() {
+function set_host_name() {
     # shellcheck disable=SC2068
-    for node in ${WORKERS[@]}; do
-        ./core/ssh/ssh-copy-id.exp "${node}" "$PASSWD"
+    hostnamectl set-hostname "${MASTER_HOSTNAME}"
+
+    for node_name in "${!NAME_NODE_MAP[@]}"; do
+        if [[ ${node_name} != "${MASTER_HOSTNAME}" ]]; then
+            # shellcheck disable=SC2087
+            ssh -o StrictHostKeyChecking=no "${NAME_NODE_MAP[${node_name}]}" \
+                hostnamectl set-hostname "${node_name}"
+        fi
     done
 }
 
 function send_file_and_untar() {
     local file="${APP}.tar.gz"
     # shellcheck disable=SC2164
-    cd ..  &&   tar -zvcf "${file}" "${APP}" && cd -
+    cd .. && tar -zvcf "${file}" "${APP}" && cd -
     # shellcheck disable=SC2068
     for node in ${WORKERS[@]}; do
         # shellcheck disable=SC2087
@@ -42,5 +44,22 @@ EOF
         tar -zvxf ${file}
         exit
 EOF
+    done
+}
+
+function isMaster() {
+    if [[ $(ifconfig ens18 | grep 'inet ' | cut -d " " -f 10) == "${MASTER}" ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+function copy_id() {
+    yum install expect openssl openssh-server openssh-clients -y
+    ./core/ssh/ssh-keygen.exp
+    # shellcheck disable=SC2068
+    for node in ${WORKERS[@]}; do
+        ./core/ssh/ssh-copy-id.exp "${node}" "$PASSWD"
     done
 }
