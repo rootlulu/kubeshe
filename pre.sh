@@ -70,7 +70,6 @@ function pre_main() {
     if isMaster; then
         copy_id
         set_host_name
-        send_file_and_untar
     fi
 
 }

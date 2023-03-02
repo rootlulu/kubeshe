@@ -173,9 +173,10 @@ function run() {
     # shellcheck source=/dev/null
     . ./common_install_utils.sh
     # shellcheck source=/dev/null
-    if [[ $(ifconfig ens18 | grep 'inet ' | cut -d " " -f 10) == "${MASTER}" ]]; then
+    if isMaster; then
         . ./master_install_utils.sh
         init_master
+        send_file_and_untar
         for node in "${WORKERS[@]}"; do
             remote_ssh "${node}" \
                 "cd "${PATH_}/${APP}"" \
