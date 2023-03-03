@@ -1,4 +1,6 @@
 #!/bin/bash
+# shellcheck disable=SC2034
+# shellcheck source=/dev/null
 # 1. help, verbose等
 # 2. yum等源数据
 # 3. helm等安装需求
@@ -17,20 +19,20 @@ declare -a NODES
 MASTER=
 MASTER_HOSTNAME="k8s-master"
 declare -a WORKERS
-WOEKWE_HOSTNAME_PREFIX="k8s-node"
+WORKER_HOSTNAME_PREFIX="k8s-node"
 declare -A NAME_NODE_MAP
 YUM_URL=
 DOCKER_URL=
 
+# Generate the join sentence in master, then scp to workers and run it.
 JOIN_CMD_SHELL="_join_cmd.sh"
 
 # deploy kube config
-# shellcheck disable=SC2034
 KUBE_VERSION=v1.21.10
-# shellcheck disable=SC2034
 SERVICE_CIDR="10.96.0.0/16"
-# shellcheck disable=SC2034
 POD_NETWORK_CIDR="10.244.0.0/16"
+
+# the k8s exact version.
 KUBELET="kubelet-1.21.10"
 KUBEADM="kubeadm-1.21.10"
 KUBECTL="kubectl-1.21.10"
@@ -122,7 +124,7 @@ function process_params() {
                     NAME_NODE_MAP[${MASTER_HOSTNAME}]=${MASTER}
                 else
                     WORKERS+=("${NODES[${num} - 1]}")
-                    NAME_NODE_MAP[${WOEKWE_HOSTNAME_PREFIX}$((num - 1))]=${NODES[${num} - 1]}
+                    NAME_NODE_MAP[${WORKER_HOSTNAME_PREFIX}$((num - 1))]=${NODES[${num} - 1]}
                 fi
             done
             shift
@@ -161,20 +163,21 @@ function process_params() {
 }
 
 function setup() {
+    . ./utils.sh
+    . ./common_install_utils.sh
+    . ./master_install_utils.sh
+    . ./node_install_utils.sh
+    . ./pre.sh
     process_params "$@"
     # set yum docker and others. then tar the install package to other nodes and
     # set all nodes' hostname.
-    # shellcheck source=/dev/null
-    . ./pre.sh
+    pre_main
 }
 
 function run() {
-    . ./utils.sh
-    # shellcheck source=/dev/null
-    . ./common_install_utils.sh
-    # shellcheck source=/dev/null
+    install_common
     if isMaster; then
-        . ./master_install_utils.sh
+        # . ./master_install_utils.sh
         init_master
         send_file_and_untar
         for node in "${WORKERS[@]}"; do
@@ -186,22 +189,28 @@ function run() {
                 ) -v"
         done
     else
-        . ./node_install_utils.sh
         join_cluster
     fi
 }
 
 function teardown() {
     :
-    # shellcheck source=/dev/null
     # . ./post.sh
     echo "finished"
 }
 
 function main() {
+    startTime=$(date +%Y%m%d-%H:%M:%S)
+    startTime_s=$(date +%s)
+
     setup "$@"
     run
     teardown
+    
+    endTime=$(date +%Y%m%d-%H:%M:%S)
+    endTime_s=$(date +%s)
+    sumTime=$((endTime_s - startTime_s))
+    printf "%s ---> %s \n Total:%s seconds" "$startTime" "$endTime" "$sumTime"
 }
 
 main "$@"

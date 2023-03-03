@@ -1,4 +1,5 @@
 #!/bin/bash
+# Set the mirror addr, host_name and logining without secret between nodes.
 
 _get_distribution() {
     local lsb_dist=
@@ -47,24 +48,13 @@ function set_docker() {
     :
 }
 
-function copy_ssh_id_and_send() {
-    # shellcheck source=/dev/null
-    . ./core/ssh/main.sh
-    # send_file_and_untar
-}
-
-function set_host_name() {
-    # shellcheck source=/dev/null
-    . ./core/set_host_name.sh
-}
-
 function pre_main() {
+    # shellcheck source=/dev/null
+    . ./core/core.sh
     set_yum
     set_docker
 
     yum install net-tools -y
-    # shellcheck source=/dev/null
-    . ./core/core.sh
     # shellcheck disable=SC2091
     # if $(isMaster); then
     if isMaster; then
@@ -79,5 +69,3 @@ function pre_main() {
 if ! (return 0 2>/dev/null); then
     echo "ERROR: Must run this shell in current process."
 fi
-
-pre_main

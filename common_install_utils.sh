@@ -147,5 +147,3 @@ function install_common() {
     set_k8s_resource
     install_k8s
 }
-
-install_common

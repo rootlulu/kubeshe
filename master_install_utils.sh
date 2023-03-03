@@ -36,7 +36,7 @@ function init_master() {
     scp /etc/kubernetes/admin.conf 10.128.170.33:~/.kube/config
 
     # deploy the network plugin. can use  flannel, calico, cana and so on.
-    # kubectl apply -f" ${PATH_}/${APP}/kubenets/plugins/calico.yml"
+    kubectl apply -f "${PATH_}/${APP}/kubenets/plugins/calico.yml"
 
     # todo, change the mode to "ipvs"
     # kubectl edit cm kube-proxy -n kube-system

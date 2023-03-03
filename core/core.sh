@@ -47,14 +47,6 @@ EOF
     done
 }
 
-function isMaster() {
-    if [[ $(ifconfig ens18 | grep 'inet ' | cut -d " " -f 10) == "${MASTER}" ]]; then
-        return 0
-    else
-        return 1
-    fi
-}
-
 function copy_id() {
     yum install expect openssl openssh-server openssh-clients -y
     ./core/ssh/ssh-keygen.exp
