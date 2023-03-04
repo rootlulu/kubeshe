@@ -168,6 +168,7 @@ function setup() {
     . ./master_install_utils.sh
     . ./node_install_utils.sh
     . ./pre.sh
+    . ./post.sh
     process_params "$@"
     # set yum docker and others. then tar the install package to other nodes and
     # set all nodes' hostname.
@@ -195,8 +196,11 @@ function run() {
 
 function teardown() {
     :
-    # . ./post.sh
-    echo "finished"
+    if successInstalled; then
+        echo "Install finished"
+    else
+        echo "Install Failed"
+    fi
 }
 
 function main() {
@@ -206,7 +210,7 @@ function main() {
     setup "$@"
     run
     teardown
-    
+
     endTime=$(date +%Y%m%d-%H:%M:%S)
     endTime_s=$(date +%s)
     sumTime=$((endTime_s - startTime_s))
