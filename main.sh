@@ -163,12 +163,6 @@ function process_params() {
 }
 
 function setup() {
-    . ./utils.sh
-    . ./common_install_utils.sh
-    . ./master_install_utils.sh
-    . ./node_install_utils.sh
-    . ./pre.sh
-    . ./post.sh
     process_params "$@"
     # set yum docker and others. then tar the install package to other nodes and
     # set all nodes' hostname.
@@ -178,7 +172,6 @@ function setup() {
 function run() {
     install_common
     if isMaster; then
-        # . ./master_install_utils.sh
         init_master
         send_file_and_untar
         for node in "${WORKERS[@]}"; do
@@ -190,12 +183,12 @@ function run() {
                 ) -v"
         done
     else
+        # running only in the workers.
         join_cluster
     fi
 }
 
 function teardown() {
-    :
     if successInstalled; then
         echo "Install finished"
     else
@@ -204,17 +197,25 @@ function teardown() {
 }
 
 function main() {
-    startTime=$(date +%Y%m%d-%H:%M:%S)
-    startTime_s=$(date +%s)
+    # source all scripts.
+    . ./utils.sh
+    . ./common_install_utils.sh
+    . ./master_install_utils.sh
+    . ./node_install_utils.sh
+    . ./pre.sh
+    . ./post.sh
 
     setup "$@"
     run
     teardown
-
-    endTime=$(date +%Y%m%d-%H:%M:%S)
-    endTime_s=$(date +%s)
-    sumTime=$((endTime_s - startTime_s))
-    printf "%s ---> %s \n Total:%s seconds" "$startTime" "$endTime" "$sumTime"
 }
 
+startTime=$(date +%Y%m%d-%H:%M:%S)
+startTime_s=$(date +%s)
+
 main "$@"
+
+endTime=$(date +%Y%m%d-%H:%M:%S)
+endTime_s=$(date +%s)
+sumTime=$((endTime_s - startTime_s))
+printf "%s ---> %s \n Total:%s seconds" "$startTime" "$endTime" "$sumTime"

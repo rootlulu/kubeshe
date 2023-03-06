@@ -1,10 +1,12 @@
 #!/bin/bash
 
+# all common installer in all nodes.
+
 function set_dns() {
     # set the hosts
     for node_name in "${!NAME_NODE_MAP[@]}"; do
         cat >>/etc/hosts <<EOF
-    ${NAME_NODE_MAP[${node_name}]} ${node_name}
+${NAME_NODE_MAP[${node_name}]} ${node_name}
 EOF
     done
 }
@@ -21,23 +23,32 @@ function colse_selinux_and_swap() {
     set +e
     setenforce 0
     set -e
-    # reboot will work.
+    # worker after rebooting.
     sed -i 's/enforcing/disabled/' /etc/selinux/config
     # close the current session's swap
     swapoff -a
-    # reboot will work.
+    # worked after rebooting.
     sed -ri 's/.*swap.*/#&/' /etc/fstab
 }
 
 function ipv4_2_iptables() {
     # shellcheck disable=SC2129
-    echo "net.ipv4.ip_forward = 1" >>/etc/sysctl.conf
-    echo "net.bridge.bridge-nf-call-ip6tables = 1" >>/etc/sysctl.conf
-    echo "net.bridge.bridge-nf-call-iptables = 1" >>/etc/sysctl.conf
-    echo "net.ipv6.conf.all.disable_ipv6 = 1" >>/etc/sysctl.conf
-    echo "net.ipv6.conf.default.disable_ipv6 = 1" >>/etc/sysctl.conf
-    echo "net.ipv6.conf.lo.disable_ipv6 = 1" >>/etc/sysctl.conf
-    echo "net.ipv6.conf.all.forwarding = 1" >>/etc/sysctl.conf
+    cat >> /etc/sysctl.conf <<EOF
+net.ipv4.ip_forward = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+net.ipv6.conf.lo.disable_ipv6 = 1
+net.ipv6.conf.all.forwarding = 1
+EOF
+    # echo "net.ipv4.ip_forward = 1" >>/etc/sysctl.conf
+    # echo "net.bridge.bridge-nf-call-ip6tables = 1" >>/etc/sysctl.conf
+    # echo "net.bridge.bridge-nf-call-iptables = 1" >>/etc/sysctl.conf
+    # echo "net.ipv6.conf.all.disable_ipv6 = 1" >>/etc/sysctl.conf
+    # echo "net.ipv6.conf.default.disable_ipv6 = 1" >>/etc/sysctl.conf
+    # echo "net.ipv6.conf.lo.disable_ipv6 = 1" >>/etc/sysctl.conf
+    # echo "net.ipv6.conf.all.forwarding = 1" >>/etc/sysctl.conf
 
     # append the br_netfilter module and make it worked forever.
     modprobe br_netfilter
@@ -47,12 +58,12 @@ function ipv4_2_iptables() {
 function open_ipvs() {
     yum -y install ipset ipvsadm
     cat >/etc/sysconfig/modules/ipvs.modules <<EOF
-        #!/bin/bash
-        modprobe -- ip_vs
-        modprobe -- ip_vs_rr
-        modprobe -- ip_vs_wrr
-        modprobe -- ip_vs_sh
-        modprobe -- nf_conntrack
+#!/bin/bash
+modprobe -- ip_vs
+modprobe -- ip_vs_rr
+modprobe -- ip_vs_wrr
+modprobe -- ip_vs_sh
+modprobe -- nf_conntrack
 EOF
     chmod 755 /etc/sysconfig/modules/ipvs.modules
     bash /etc/sysconfig/modules/ipvs.modules
@@ -65,13 +76,16 @@ function install_docker() {
     systemctl stop docker.socket
     systemctl stop docker
     systemctl disable docker
+    # yum remove all docker service.
     yum list installed | grep docker | xargs -I {} echo {} | cut -d " " -f 1 | xargs -I {} yum remove -y {}
     set -e
 
     # install another version.
     yum -y install yum-utils
+    # todo: to be configured.
     yum-config-manager --add-repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
     yum makecache fast
+    # todo: to be configured.
     yum -y install docker-ce-3:20.10.8-3.el7.x86_64 docker-ce-cli-1:20.10.8-3.el7.x86_64 containerd.io
 
     systemctl start docker
@@ -80,6 +94,7 @@ function install_docker() {
 
     # aliyun repo speeded-up
     sudo mkdir -p /etc/docker
+    # todo: to be configured.
     sudo tee /etc/docker/daemon.json <<-'EOF'
         {
         "exec-opts": ["native.cgroupdriver=systemd"],	
@@ -101,6 +116,7 @@ EOF
 }
 
 function set_k8s_resource() {
+    # todo: be configured.
     cat >/etc/yum.repos.d/kubernetes.repo <<EOF
 [kubernetes]
 name=Kubernetes
@@ -115,16 +131,21 @@ EOF
 function change_cgroup() {
     # vim /etc/sysconfig/kubelet
     # change the follow.
+    sed -i  's/KUBELET_EXTRA_ARGS=.*/KUBELET_EXTRA_ARGS="--cgroup-driver=systemd"/g' /etc/sysconfig/kubelet
     # KUBELET_EXTRA_ARGS="--cgroup-driver=systemd"
+    # todo with the postpone.
     # KUBE_PROXY_MODE="ipvs"
     :
 }
 
 function install_k8s() {
-    yum install -y "${KUBELET}" "${KUBEADM}" "${KUBECTL}" -y
-    systemctl enable kubelet
+    # todo: be configured.
     local wait_installeds
     local resource="registry.cn-hangzhou.aliyuncs.com/google_containers/"
+
+    yum install -y "${KUBELET}" "${KUBEADM}" "${KUBECTL}" -y
+    systemctl enable kubelet
+
     wait_installeds=$(kubeadm config images list)
     # echo "$wait_installeds" | xargs -n1 | sed "s/k8s.gcr.io\///"
     for wait_installed in ${wait_installeds}; do
@@ -145,5 +166,6 @@ function install_common() {
     open_ipvs
     install_docker
     set_k8s_resource
+    change_cgroup
     install_k8s
 }
