@@ -38,7 +38,6 @@ function init_master() {
     # deploy the network plugin. can use  flannel, calico, cana and so on.
     kubectl apply -f "${PATH_}/${APP}/kubenets/plugins/calico.yml"
 
-    # todo, change the mode to "ipvs"
-    # kubectl edit cm kube-proxy -n kube-system
-    # kubectl delete pod -l k8s-app=kube-proxy -n kube-system
+    kubectl get cm kube-proxy -n kube-system -o yaml | sed 's/mode:.*/mode: "ipvs"/g' | kubectl apply -f -
+    kubectl delete pod -l k8s-app=kube-proxy -n kube-system
 }

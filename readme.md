@@ -26,15 +26,16 @@ At the root path. run command:
 ```
 
 ## done
-# one click install k8s cluster.
-# test the k8s installation result.
+### one click install k8s cluster.
+### add the func to test whether the k8s installed fail or success.
+### set the kube-proxy mode to ipvs from iptables
+
 
 
 ## todo
-1. set the kube-proxy mode to ipvs from iptables.
-2. set coredns
-3. set harbor as a individual hub.
-4. add the visualization user interface.
+1. set coredns
+2. set harbor as a individual hub.
+3. add the visualization user interface.
 
 #  the shell process.
 > the process steps( installing at the master but not salves.):

@@ -56,7 +56,6 @@ function pre_main() {
 
     yum install net-tools -y
     # shellcheck disable=SC2091
-    # if $(isMaster); then
     if isMaster; then
         copy_id
         set_host_name

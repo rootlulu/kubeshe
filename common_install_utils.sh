@@ -132,10 +132,7 @@ function change_cgroup() {
     # vim /etc/sysconfig/kubelet
     # change the follow.
     sed -i  's/KUBELET_EXTRA_ARGS=.*/KUBELET_EXTRA_ARGS="--cgroup-driver=systemd"/g' /etc/sysconfig/kubelet
-    # KUBELET_EXTRA_ARGS="--cgroup-driver=systemd"
-    # todo with the postpone.
-    # KUBE_PROXY_MODE="ipvs"
-    :
+    echo KUBE_PROXY_MODE="ipvs" >> /etc/sysconfig/kubelet
 }
 
 function install_k8s() {
