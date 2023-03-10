@@ -37,3 +37,4 @@ function init_master() {
     kubectl get cm kube-proxy -n kube-system -o yaml | sed 's/mode:.*/mode: "ipvs"/g' | kubectl apply -f -
     kubectl delete pod -l k8s-app=kube-proxy -n kube-system
 }
+

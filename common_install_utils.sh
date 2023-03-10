@@ -13,7 +13,15 @@ EOF
 
 function set_time_synchronization() {
     yum install ntpdate -y
-    ntpdate time.windows.com
+    # notice: ntpdate update may be failed, so add teh while loop
+    local count=0
+    while [[ ${count} -lt 3 ]]; do
+        count=${count}+1
+        # the $() will execute the output from the inner cmd.
+        if timeout 30 ntpdate time.windows.com; then
+            break
+        fi
+    done
 }
 
 function colse_selinux_and_swap() {
@@ -33,7 +41,7 @@ function colse_selinux_and_swap() {
 
 function ipv4_2_iptables() {
     # shellcheck disable=SC2129
-    cat >> /etc/sysctl.conf <<EOF
+    cat >>/etc/sysctl.conf <<EOF
 net.ipv4.ip_forward = 1
 net.bridge.bridge-nf-call-ip6tables = 1
 net.bridge.bridge-nf-call-iptables = 1
@@ -42,14 +50,6 @@ net.ipv6.conf.default.disable_ipv6 = 1
 net.ipv6.conf.lo.disable_ipv6 = 1
 net.ipv6.conf.all.forwarding = 1
 EOF
-    # echo "net.ipv4.ip_forward = 1" >>/etc/sysctl.conf
-    # echo "net.bridge.bridge-nf-call-ip6tables = 1" >>/etc/sysctl.conf
-    # echo "net.bridge.bridge-nf-call-iptables = 1" >>/etc/sysctl.conf
-    # echo "net.ipv6.conf.all.disable_ipv6 = 1" >>/etc/sysctl.conf
-    # echo "net.ipv6.conf.default.disable_ipv6 = 1" >>/etc/sysctl.conf
-    # echo "net.ipv6.conf.lo.disable_ipv6 = 1" >>/etc/sysctl.conf
-    # echo "net.ipv6.conf.all.forwarding = 1" >>/etc/sysctl.conf
-
     # append the br_netfilter module and make it worked forever.
     modprobe br_netfilter
     sysctl -p
@@ -131,8 +131,8 @@ EOF
 function change_cgroup() {
     # vim /etc/sysconfig/kubelet
     # change the follow.
-    sed -i  's/KUBELET_EXTRA_ARGS=.*/KUBELET_EXTRA_ARGS="--cgroup-driver=systemd"/g' /etc/sysconfig/kubelet
-    echo KUBE_PROXY_MODE="ipvs" >> /etc/sysconfig/kubelet
+    sed -i 's/KUBELET_EXTRA_ARGS=.*/KUBELET_EXTRA_ARGS="--cgroup-driver=systemd"/g' /etc/sysconfig/kubelet
+    echo KUBE_PROXY_MODE="ipvs" >>/etc/sysconfig/kubelet
 }
 
 function install_k8s() {
@@ -146,7 +146,7 @@ function install_k8s() {
     wait_installeds=$(kubeadm config images list)
     # echo "$wait_installeds" | xargs -n1 | sed "s/k8s.gcr.io\///"
     for wait_installed in ${wait_installeds}; do
-        echo "The pull url: ${resource}${wait_installed##*/}"
+        logger info "The pull url: ${resource}${wait_installed##*/}"
         # docker pull "${resource}${wait_installed/k8s.gcr.io\//}"
         docker pull "${resource}${wait_installed##*/}"
         if [[ ${wait_installed} =~ "coredns" ]]; then

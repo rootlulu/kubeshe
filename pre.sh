@@ -38,7 +38,7 @@ function set_yum() {
         fi
         ;;
     *)
-        echo "Unsupported distribution '$dist'"
+        logger error "Unsupported distribution '$dist'"
         exit 1
         ;;
     esac
@@ -66,5 +66,5 @@ function pre_main() {
 # Invoke main with args if not sourced
 # Approach via: https://stackoverflow.com/a/28776166/8787985
 if ! (return 0 2>/dev/null); then
-    echo "ERROR: Must run this shell in current process."
+    logger error "Must run this shell in current process."
 fi

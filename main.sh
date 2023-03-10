@@ -69,12 +69,12 @@ function valid_empty_value() {
     local k=${1}
     shift
     if [[ $# -le 0 ]]; then
-        echo "the $k's value is empty"
+        logger error "the $k's value is empty"
         exit 1
     else
         while [[ $# -gt 0 ]]; do
             if [[ -z ${1-} ]]; then
-                echo "the $k's value is empty"
+                logger error "the $k's value is empty"
                 exit 1
             fi
             shift
@@ -144,7 +144,7 @@ function process_params() {
             shift
             ;;
         *)
-            echo -e "No valid pararms provided. \n"
+            logger error "No valid pararms provided. \n"
             help
             exit 1
             ;;
@@ -153,10 +153,10 @@ function process_params() {
 
     # if [[ $ssh_provided && $nodes_provided ]]; then
     if ! $ssh_provided; then
-        echo "The required param is not provided!: --ssh!"
+        logger error "The required param is not provided!: --ssh!"
         exit 1
     elif ! $nodes_provided; then
-        echo "The required param is not provided!: --k8s_nodes!"
+        logger error "The required param is not provided!: --k8s_nodes!"
         exit 1
     fi
 
@@ -189,10 +189,12 @@ function run() {
 }
 
 function teardown() {
-    if successInstalled; then
-        echo "Install finished"
-    else
-        echo "Install Failed"
+    if isMaster; then
+        if successInstalled; then
+            logger info "Install finished"
+        else
+            logger error "Install Failed"
+        fi
     fi
 }
 
