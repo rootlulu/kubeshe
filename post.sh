@@ -17,7 +17,7 @@ function successInstalled() {
     kubectl create deployment nginx --image=nginx:1.14-alpine
     kubectl expose deployment nginx --port=80 --type=NodePort
     svc_ip=$(kubectl get svc | awk '{if ($1 == "nginx") print $3}')
-    if [[ $(curl -s "${svc_ip}" -o /dev/null -w "%{http_code}") -eq 0 ]]; then
+    if [[ $(curl -s "${svc_ip}" -o /dev/null -w "%{http_code}") -eq 200 ]]; then
         kubectl delete svc,deploy nginx
         return 0
     else

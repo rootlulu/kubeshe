@@ -16,28 +16,24 @@ function init_master() {
     sudo chown "$(id -u):$(id -g)" "$HOME/.kube/config"
 
     # if you are in the root policy.
-    export KUBECONFIG=/etc/kubernetes/admin.conf
+    if [[ ${USER} == "root" ]]; then
+        export KUBECONFIG=/etc/kubernetes/admin.conf
+    fi
 
-    # 生成一个永不过期的token
+    # generate a forever token and output the join cluster sentence to shell script.
     kubeadm token create --ttl 0 --print-join-command >"${PATH_}/${APP}/${JOIN_CMD_SHELL}"
     chmod 700 "${PATH_}/${APP}/${JOIN_CMD_SHELL}"
 
-    # todo in the master.
-    scp "${PATH_}/${APP}/${JOIN_CMD_SHELL}" 10.128.170.32:/var/ysm/kubeshe/
-    scp "${PATH_}/${APP}/${JOIN_CMD_SHELL}" 10.128.170.33:/var/ysm/kubeshe/
-
-    mkdir -p ~/.kube
-    touch ~/.kube/config
-
-    # TODO  in the master.
-    remote_ssh 10.128.170.32 "mkdir -p ~/.kube"
-    remote_ssh 10.128.170.33 "mkdir -p ~/.kube"
-    scp /etc/kubernetes/admin.conf 10.128.170.32:~/.kube/config
-    scp /etc/kubernetes/admin.conf 10.128.170.33:~/.kube/config
+    for node in "${WORKERS[@]}"; do
+        scp "${PATH_}/${APP}/${JOIN_CMD_SHELL}" "${node}:${PATH_}/${APP}"
+        remote_ssh "${node}" "mkdir -p ~/.kube"
+        scp /etc/kubernetes/admin.conf "${node}:~/.kube/config"
+    done
 
     # deploy the network plugin. can use  flannel, calico, cana and so on.
     kubectl apply -f "${PATH_}/${APP}/kubenets/plugins/calico.yml"
 
+    # set the ipvs mode.
     kubectl get cm kube-proxy -n kube-system -o yaml | sed 's/mode:.*/mode: "ipvs"/g' | kubectl apply -f -
     kubectl delete pod -l k8s-app=kube-proxy -n kube-system
 }
