@@ -9,7 +9,7 @@ function testK8s() {
     kubectl expose deployment nginx --port=80 --type=NodePort
     svc_ip=$(kubectl get svc | awk '{if ($1 == "nginx") print $3}')
     # to wait the service started.
-    sleep 10
+    sleep 20
     if [[ $(curl -s "${svc_ip}" -o /dev/null -w "%{http_code}") -eq 200 ]]; then
         kubectl delete svc,deploy nginx
         logger info "success"
