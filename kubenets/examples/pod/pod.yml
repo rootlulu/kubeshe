@@ -4,7 +4,7 @@ metadata:
   annotations:
     example: "ysm-pod"
   labels:
-    run: nginx-pod
+    app: ysm-nginx-pod
   name: ysm-nginx-pod
   namespace: default
 spec:
