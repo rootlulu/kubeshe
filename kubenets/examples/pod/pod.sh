@@ -45,10 +45,10 @@ function main() {
     fi
 
     if [[ ${1-} = "apply" || ${1-} = "create" ]]; then
-        logger info "create a pod"
+        logger info "create the pod"
         applyPod
     elif [[ ${1-} = "delete" ]]; then
-        logger info "delete a pod"
+        logger info "delete the pod"
         deletePod
     fi
 }

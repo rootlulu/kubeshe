@@ -17,14 +17,17 @@ function applySvc() {
     fi
     sleep 20
     # get the cluster_ip and node_port.
-    cluster_ip_and_node_port=$(kubectl get service -owide | awk -F '[/:[:space:]]+' '{if ($1 == "ysm-nginx-svc") print $3,$6}')
+    cluster_ip_and_node_port=$(kubectl get service -owide | awk -F '[/:[:space:]]+' \
+    '{if ($1 == "ysm-nginx-svc-node-port") print $3,$6}') # todo the name is hardcoding.
     cluster_ip=$(echo "${cluster_ip_and_node_port}" | awk '{print $1}')
     node_port=$(echo "${cluster_ip_and_node_port}" | awk '{print $2}')
     node_ip=$(ifconfig ens18 | grep 'inet ' | cut -d " " -f 10)
-    echo "${cluster_ip}"
-    if [[ $(curl -s "${cluster_ip}" -o /dev/null -w "%{http_code}") -eq 200 && 
-        $(curl -s "${node_ip}:${node_port}" -o /dev/null -w "%{http_code}") -eq 200
-    ]]; then
+    echo "${cluster_ip-"There is not a cluster-ip"}"
+    # todo test the externalName, i'm lazy to write the code.
+    # && $(kubectl exec ysm-busybox-pod -- ping ysm-nginx-svc.default.svc.cluster.local)
+    if [[ $(curl -s "${cluster_ip}" -o /dev/null -w "%{http_code}") -eq 200 &&
+    $(curl -s "${node_ip}:${node_port}" -o /dev/null -w "%{http_code}") -eq 200 ]]; then
+
         logger info "success"
     else
         logger error "failed"
@@ -33,13 +36,12 @@ function applySvc() {
 
 function deleteSvc() {
     kubectl delete -f "${CURRENT}/service.yml"
-    if [[ $? -eq 0 ]];then 
+    if [[ $? -eq 0 ]]; then
         logger info "success"
     else
         logger error "failed"
     fi
 }
-
 
 function main() {
     echo "The execute entry: $(pwd)"
