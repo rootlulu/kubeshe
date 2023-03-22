@@ -8,6 +8,17 @@ PATH_="/var/ysm"
 APP="kubeshe"
 CURRENT=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
 
+function externalPing() {
+    local count=0
+    while [[ ${count} -lt 3 ]]; do
+        count=${count}+1
+        if kubectl exec ysm-busybox-pod -- ping -c 1 ysm-nginx-svc-external.default.svc.cluster.local | grep -q "seq=0"; then
+            return 0
+        fi
+    done
+    return 1
+}
+
 function applySvc() {
     local cluster_ip cluster_ip_and_node_port node_ip node_port
     kubectl apply -f "${CURRENT}/service.yml"
@@ -26,7 +37,8 @@ function applySvc() {
     # todo test the externalName, i'm lazy to write the code.
     # && $(kubectl exec ysm-busybox-pod -- ping ysm-nginx-svc.default.svc.cluster.local)
     if [[ $(curl -s "${cluster_ip}" -o /dev/null -w "%{http_code}") -eq 200 &&
-    $(curl -s "${node_ip}:${node_port}" -o /dev/null -w "%{http_code}") -eq 200 ]]; then
+    $(curl -s "${node_ip}:${node_port}" -o /dev/null -w "%{http_code}") -eq 200 &&
+        $(externalPing) -eq 0 ]]; then
 
         logger info "success"
     else
