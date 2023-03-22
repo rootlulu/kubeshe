@@ -28,14 +28,13 @@ function applySvc() {
     fi
     sleep 20
     # get the cluster_ip and node_port.
-    cluster_ip_and_node_port=$(kubectl get service -owide | awk -F '[/:[:space:]]+' \
-    '{if ($1 == "ysm-nginx-svc-node-port") print $3,$6}') # todo the name is hardcoding.
+    nodeport_name=$(kubectl get svc | awk '{if ($2 == "NodePort") print $1}')
+    cluster_ip_and_node_port=$(kubectl get service -owide | awk -v n=${nodeport_name} \
+    -F '[/:[:space:]]+' '{if ($1 == n) print $3,$6}')
     cluster_ip=$(echo "${cluster_ip_and_node_port}" | awk '{print $1}')
     node_port=$(echo "${cluster_ip_and_node_port}" | awk '{print $2}')
     node_ip=$(ifconfig ens18 | grep 'inet ' | cut -d " " -f 10)
     echo "${cluster_ip-"There is not a cluster-ip"}"
-    # todo test the externalName, i'm lazy to write the code.
-    # && $(kubectl exec ysm-busybox-pod -- ping ysm-nginx-svc.default.svc.cluster.local)
     if [[ $(curl -s "${cluster_ip}" -o /dev/null -w "%{http_code}") -eq 200 &&
     $(curl -s "${node_ip}:${node_port}" -o /dev/null -w "%{http_code}") -eq 200 &&
         $(externalPing) -eq 0 ]]; then
