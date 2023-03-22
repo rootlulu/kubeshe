@@ -1,4 +1,9 @@
-serviceType=
+ns=default
+
+get getAll:
+	@echo "get all ns, pod, svc, deploy, job and so on"
+	-@kubectl get ns,pod,svc,deploy,job -n $(ns)
+	@echo
 
 test: 
 	# waitting for the service started.
@@ -27,7 +32,9 @@ deletePod:
 	@echo
 
 
-.PHONY: clean test createPod applyPod deletePod \
+.PHONY: clean test \
+get getAll \
+createPod applyPod deletePod \
 createService createSvc applyService applySvc deleteService deleteSvc
 
 clean:
