@@ -49,18 +49,19 @@ function set_docker() {
 }
 
 function pre_main() {
+    logger info "$(beauty "set yum and docker repo" 60)"
     # shellcheck source=/dev/null
     . ./core/core.sh
     set_yum
     set_docker
 
+    logger info "$(beauty "set  no password login around members." 60)"
     yum install net-tools -y
     # shellcheck disable=SC2091
     if isMaster; then
         copy_id
         set_host_name
     fi
-
 }
 
 # Invoke main with args if not sourced

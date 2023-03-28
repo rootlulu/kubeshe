@@ -163,18 +163,23 @@ function process_params() {
 }
 
 function setup() {
+    logger info "$(beauty "setUp starting.")"
     process_params "$@"
     # set yum docker and others. then tar the install package to other nodes and
     # set all nodes' hostname.
     pre_main
+    logger info "$(beauty "setUp finished.")"
 }
 
 function run() {
+    logger info "$(beauty "Install k8s starting.")"
     install_common
     if isMaster; then
+        logger info "$(beauty "Install master starting." 60)"
         init_master
         send_file_and_untar
         for node in "${WORKERS[@]}"; do
+            logger info "$(beauty "Install node starting." 60)"
             remote_ssh "${node}" \
                 "cd "${PATH_}/${APP}"" \
                 "./main.sh --ssh ${USERNAME} ${PASSWD} --k8s_nodes $(
@@ -184,21 +189,24 @@ function run() {
         done
     else
         # running only in the workers.
+        logger info "$(beauty "join in cluster." 60)"
         join_cluster
     fi
+    logger info "$(beauty "Install k8s finished.")"
 }
 
 function teardown() {
     if isMaster; then
         if successInstalled; then
-            logger info "Install finished"
+            logger info "Installation test passed"
         else
-            logger error "Install Failed"
+            logger error "Installation test failed. please check it."
         fi
     fi
 }
 
 function main() {
+    logger info "$(beauty "loading all utils...")"
     # source all scripts.
     . ./utils.sh
     . ./common_install_utils.sh
@@ -206,6 +214,7 @@ function main() {
     . ./node_install_utils.sh
     . ./pre.sh
     . ./post.sh
+    logger info "$(beauty "loaded all utils...")"
 
     setup "$@"
     run

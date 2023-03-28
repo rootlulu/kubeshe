@@ -51,3 +51,13 @@ function isMaster() {
         return 1
     fi
 }
+
+function beauty() {
+    local str len strLen left right
+    str=${1-}
+    len=${2-80}
+    strLen=${#str}
+    left=$(( (len - strLen) / 2 ))
+    right=$(( len - strLen - left ))
+    printf "%s%s%s\n" "$(printf '*%.0s' $(seq 1 $left))" "     $str     " "$(printf '*%.0s' $(seq 1 $right))"
+}
