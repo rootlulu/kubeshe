@@ -43,7 +43,7 @@ spec:
     command:
       - /bin/sh
       - -c
-      - for i in 9 8 7 6 5 4 3 2 1;do echo $i;sleep 20;done
+      - while true;do echo 111;sleep 20;done
     name: busybox-pod
     imagePullPolicy: IfNotPresent
     name: nginx-pod

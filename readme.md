@@ -4,40 +4,76 @@
 ## introduce
 > one click install kubernets with shell script in Centos7. What you can learned
 in this project:
-1. the linux shell skill.
+1. how to write the linux shell .
 2. use expect to run command in a interacting mode, like config the login without password around some machine.
-3. the make file knowledge.
-4. how to install k8s.
-5. the core concept in k8s.
+3. the make file skill.
+4. how to install k8s, its dependencies.
+5. the core concepts.
 6. example of the k8s's core concept like: pod. deployment, dynamic pv ... 
 7. how customization components worked fine with k8s. like: coredns, harbor. 
 contained, dashboard and so on.
+8. ...
 
 ## usage
-### one click install k8s master.
+### <a name="one_click">one click install k8s master.</a>
 At the root path. run command:
 ```shell
     ./main.sh --ssh username password --k8s_nodes master_ip:node1_ip:node_2_ip
     # example:
     # your machine username and password is root/root and the k8s cluster is 
-    # 1.1.1.1(master) 2.2.2.2 3.3.3.3
-    ./main.sh --ssh root root --k8s_nodes 1.1.1.1:2.2.2.2:3.3.3.3
+    # 10.128.170.31(master) 10.128.170.32 10.128.170.33
+    ./main.sh --ssh root root --k8s_nodes 10.128.170.31:10.128.170.32:10.128.170.33
     you can run ./main.sh -h for more information.
 ```
 
-## done
-### one click install k8s cluster.
-### add the func to test whether the k8s installed fail or success.
-### set the kube-proxy mode to ipvs from iptables
+### <a name="makefile">makefile for k8s examples</a>.
+> makefile supported k8s' examples. all examples will autotest after deployment.
+1. get all resource info.
+    ```shell
+    make <get| getAll>
+    ```
+2. create a pod:
+    > this will create a nginx pod and open the 80 port for visiting.
+    > in this case, would delete the existed pod at first.
+    ```shell
+    make <createPod | applyPod>
+    ```
+3. delete a pod:
+    > delete the existed pod.
+    ```shell
+    make  deletePod
+    ```
+4. create a service.
+    > create a service with type of ClusterIp, NodePort, externalName.
+    > in this case, would create a coressponding nginx pod for requests processing.
+    ```shell
+    make <createService | createSvc | applyService | applySvc>
+    ```
+5. deletea service
+    > delete the service, and its existed pod.
+    ```shell
+    make <deleteService | deleteSvc>
+    ```
+for the example creating a service and its' pod:
+![make createSvc](./pictures/example.png)
 
+## done
+1. [one click install k8s cluster](#a-nameoneclickone-click-install-k8s-mastera).
+2. add the func to test whether the k8s installed fail or success.
+3. set the kube-proxy mode to ipvs from iptables.
+4. [add the makefile for pod, service example](#a-namemakefilemakefile-for-k8s-examplesa).
 
 
 ## todo
-1. set coredns
-2. set harbor as a individual hub.
-3. add the visualization user interface.
+1. the deployment makefile.
+2. fmt the code beautifully.
+3. set harbor as a individual hub.
+4. the pv, pvc makefile.
+5. add the visualization user interface.
 
-#  the shell process.
+## others
+> there is some thought for this project.
+###  the shell execution process.
 > the process steps( installing at the master but not salves.):
 1. process the input. which is the common func.
 2. common utils installing.
