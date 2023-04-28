@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ysm-nginx-deployment
+  namespace: default
+  labels:
+    app: ysm-nginx-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ysm-nginx-pod # managed pod labels.
+  template:
+    metadata:
+      name: ysm-nginx-pod
+      labels:
+        app: ysm-nginx-pod
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.17.1
+        imagePullPolicy: IfNotPresent
+      restartPolicy: Always
