@@ -45,15 +45,26 @@ At the root path. run command:
     ```
 4. create a service.
     > create a service with type of ClusterIp, NodePort, externalName.
-    > in this case, would create a coressponding nginx pod for requests processing.
+    > in this case, would create a corresponding nginx pod for requests processing.
     ```shell
     make <createService | createSvc | applyService | applySvc>
     ```
-5. deletea service
+5. delete a service
     > delete the service, and its existed pod.
     ```shell
     make <deleteService | deleteSvc>
     ```
+6. create s deployment
+    > create the deployment which has two nginx pod.
+    ```shell
+    make <createDeploy | createDeployment | applyDeploy | applyDeployment>
+    ```
+7. delete a deployment
+    > delete the created deployment.
+    ```shell
+    make <deleteDeploy | deleteDeployment>
+    ```
+
 for the example creating a service and its' pod:
 ![make createSvc](./pictures/example.png)
 
@@ -61,15 +72,14 @@ for the example creating a service and its' pod:
 1. [one click install k8s cluster](#a-nameoneclickone-click-install-k8s-mastera).
 2. add the func to test whether the k8s installed fail or success.
 3. set the kube-proxy mode to ipvs from iptables.
-4. [add the makefile for pod, service example](#a-namemakefilemakefile-for-k8s-examplesa).
+4. [add the makefile for pod, service, deployment example](#a-namemakefilemakefile-for-k8s-examplesa).
 
 
 ## todo
-1. the deployment makefile.
-2. fmt the code beautifully.
-3. set harbor as a individual hub.
-4. the pv, pvc makefile.
-5. add the visualization user interface.
+1. fmt the code beautifully.
+2. set harbor as a individual hub.
+3. the pv, pvc makefile.
+4. add the visualization user interface.
 
 ## others
 > there is some thought for this project.
