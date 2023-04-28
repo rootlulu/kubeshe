@@ -45,7 +45,7 @@ function applySvc() {
     cluster_ip=$(echo "${cluster_ip_and_node_port}" | awk '{print $1}')
     node_port=$(echo "${cluster_ip_and_node_port}" | awk '{print $2}')
     node_ip=$(ifconfig ens18 | grep 'inet ' | cut -d " " -f 10)
-    echo "${cluster_ip-"There is not a cluster-ip"}"
+    echo "The cluster is ${cluster_ip-"cant get the clsuter-ip."}"
     if [[ $(curl -s "${cluster_ip}" -o /dev/null -w "%{http_code}") -eq 200 &&
     $(curl -s "${node_ip}:${node_port}" -o /dev/null -w "%{http_code}") -eq 200 &&
         $(externalPing) -eq 0 && $(headlinessPing) -eq 0 ]]; then
@@ -68,8 +68,8 @@ function main() {
     echo "The execute entry: $(pwd)"
     . ${PATH_}/${APP}/utils.sh
     array=("apply" "create" "delete")
-    if ! [[ "${array[*]}" =~ "${1-}" ]]; then
-        logger error "The invalid params. it must be apply, create or delete."
+    if ! [[ "${array[*]}" =~ "${1-"996die"}" ]]; then
+        logger error "The invalid first param. it must be apply, create or delete."
     fi
 
     if [[ ${1-} = "apply" || ${1-} = "create" ]]; then

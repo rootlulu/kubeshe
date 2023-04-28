@@ -18,7 +18,7 @@ function applyPod() {
     fi
     sleep 20
     cluster_ip=$(kubectl get pod -owide | awk '{if ($1 == "ysm-nginx-pod") print $6}')
-    echo "${cluster_ip}"
+    logger info "The cluster is ${cluster_ip-"cant get the ip."}"
     if [[ $(curl -s "${cluster_ip}" -o /dev/null -w "%{http_code}") -eq 200 ]]; then
         logger info "success"
     else
@@ -40,8 +40,8 @@ function main() {
     echo "The execute entry: $(pwd)"
     . ${PATH_}/${APP}/utils.sh
     array=("apply" "create" "delete")
-    if ! [[ "${array[*]}" =~ "${1-}" ]]; then
-        logger error "The invalid params. it must be apply, create or delete."
+    if ! [[ "${array[*]}" =~ "${1-"996die"}" ]]; then
+        logger error "The invalid first param. it must be apply, create or delete."
     fi
 
     if [[ ${1-} = "apply" || ${1-} = "create" ]]; then
