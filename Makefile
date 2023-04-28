@@ -11,9 +11,14 @@ test:
 	sh ./test.sh
 	@echo
 
+createDeploy createDeployment applyDeploy applyDeployment: deleteService
+	@echo "Creating Deploy: Wait for 20 seconds."
+	sh ./kubenets/examples/deployment/deployment.sh "apply" $(shell pwd)
+	@echo
+
 createService createSvc applyService applySvc: createPod deleteService
 	@echo "Creating Service: Wait for 20 seconds."
-	sh ./kubenets/examples/service/service.sh "apply" service $(shell pwd)
+	sh ./kubenets/examples/service/service.sh "apply" $(shell pwd)
 	@echo
 
 deleteService deleteSvc: deletePod
