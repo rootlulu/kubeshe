@@ -37,3 +37,21 @@ spec:
   selector:
     app: ysm-nginx-pod
   type: ExternalName
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    example: ysm-svc
+  name: ysm-nginx-svc-headliness
+  namespace: default
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: ysm-nginx-pod
+  type: ClusterIP
+  clusterIP: None

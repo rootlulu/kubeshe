@@ -1,4 +1,3 @@
----
 # the nginx pod.
 apiVersion: v1
 kind: Pod
@@ -26,8 +25,8 @@ spec:
   restartPolicy: Always
   terminationGracePeriodSeconds: 30
 
----
 # the busybox pod
+---
 apiVersion: v1
 kind: Pod
 metadata:
@@ -41,9 +40,9 @@ spec:
   containers:
   - image: busybox
     command:
-      - /bin/sh
-      - -c
-      - while true;do echo 111;sleep 20;done
+    - /bin/sh
+    - -c
+    - while true;do echo 111;sleep 20;done
     name: busybox-pod
     imagePullPolicy: IfNotPresent
     name: nginx-pod

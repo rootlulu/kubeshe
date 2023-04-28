@@ -39,4 +39,4 @@ createService createSvc applyService applySvc deleteService deleteSvc
 
 clean:
 	-rm aaa
-	# remove all the example deploymented.
+	# remove all the example deploymented. it wont be done until the all the above finished.
