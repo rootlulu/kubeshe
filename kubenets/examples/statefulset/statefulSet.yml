@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ysm-nginx-statefulset
+  namespace: default
+  labels:
+    app: ysm-nginx-statefulset
+spec:
+  selector:
+    matchLabels:
+      app: ysm-nginx-pod # the same to statefulset.metadata.labels.
+  serviceName: ysm-nginx-svc # the same to service.metadata.name
+  replicas: 3
+  template:
+    metadata:
+      name: ysm-nginx-pod
+      labels:
+        app: ysm-nginx-pod
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.17.1
+        imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ysm-nginx-svc
+  namespace: default
+spec:
+  selector:
+    app: ysm-nginx-pod
+  type: ClusterIP
+  clusterIP: None # headliness
+  ports:
+  - name: nginx
+    protocol: TCP
+    port: 80
+    targetPort: 80
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    example: "ysm-test-pod"
+  labels:
+    app: ysm-test-pod
+  name: ysm-test-pod
+  namespace: default
+spec:
+  containers:
+  - image: nginx
+    name: nginx-pod
+    ports:
+    - containerPort: 8080
+      protocol: TCP

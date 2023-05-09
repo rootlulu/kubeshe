@@ -1,5 +1,6 @@
 ns=default
 
+# todo: the dependcies.
 get getAll:
 	@echo "get all ns, pod, svc, deploy, job and so on"
 	-@kubectl get ns,pod,svc,deploy,job -n $(ns)
@@ -10,6 +11,26 @@ test:
 	@echo "Wait for 20 seconds."
 	sh ./test.sh
 	@echo
+
+createDs createDaemonSet applyDs applyDaemonSet: deleteService
+	@echo "Creating DaemonSet: Wait for 20 seconds."
+	sh ./kubenets/examples/daemonset/daemonSet.sh "apply" $(shell pwd)
+	@
+
+deleteDs deleteDaemonSet: deleteService
+	@echo "Deleting DaemonSet."
+	sh ./kubenets/examples/daemonset/daemonSet.sh "delete"  $(shell pwd)
+	@
+
+createSts createStatefulSet applySts applyStatefulSet: deleteService
+	@echo "Creating StatefulSet: Wait for 20 seconds."
+	sh ./kubenets/examples/statefulset/statefulSet.sh "apply" $(shell pwd)
+	@
+
+deleteSts deleteStatefulSet: deleteService
+	@echo "Deleting StatefulSet."
+	sh ./kubenets/examples/statefulset/statefulSet.sh "delete"  $(shell pwd)
+	@
 
 createDeploy createDeployment applyDeploy applyDeployment: deleteService
 	@echo "Creating Deploy: Wait for 20 seconds."

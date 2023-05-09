@@ -54,7 +54,7 @@ At the root path. run command:
     ```shell
     make <deleteService | deleteSvc>
     ```
-6. create s deployment
+6. create a deployment
     > create the deployment which has two nginx pod.
     ```shell
     make <createDeploy | createDeployment | applyDeploy | applyDeployment>
@@ -64,6 +64,22 @@ At the root path. run command:
     ```shell
     make <deleteDeploy | deleteDeployment>
     ```
+8. create a statefulSet
+    ```shell
+    make <applySts | createSts | applyStatefulSet | createStatefulSet>
+    ```
+9. delete a statefulSet
+    ```shell
+    make <deleteSts | deleteStatefulSet>
+    ```
+10. create a daemonSet
+    ```shell
+    make <applyDs | applyDaemonSet | createDs | createDaemonSet>
+    ```
+11. delete a daemonSet
+    ```shell
+    make <deleteDs | deleteDaemonSet>
+    ```
 
 for the example creating a service and its' pod:
 ![make createSvc](./pictures/example.png)
@@ -72,7 +88,7 @@ for the example creating a service and its' pod:
 1. [one click install k8s cluster](#a-nameoneclickone-click-install-k8s-mastera).
 2. add the func to test whether the k8s installed fail or success.
 3. set the kube-proxy mode to ipvs from iptables.
-4. [add the makefile for pod, service, deployment example](#a-namemakefilemakefile-for-k8s-examplesa).
+4. [add the makefile for pod, service, deployment, statefulSet, daemonSet example](#a-namemakefilemakefile-for-k8s-examplesa).
 
 
 ## todo
