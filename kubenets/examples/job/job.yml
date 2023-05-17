@@ -1,0 +1,33 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: busybox-ysm-job
+  namespace: default
+  labels:
+    controller: job
+spec:
+  completions: 1
+  parallelism: 1
+  activeDeadlineSeconds: 60
+  backoffLimit: 6
+  manualSelector: true
+  ttlSecondsAfterFinished: 10 # Don't delete the job until it finished 10s
+  selector:
+    matchLabels:
+      app: busybox-ysm-job-pod
+    matchExpressions:
+    - key: app
+      operator: In
+      values:
+      - busybox-ysm-job-pod
+  template:
+    metadata:
+      labels:
+        app: busybox-ysm-job-pod
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: counter
+        image: busybox:1.30
+        # job will exist in 30s
+        command: ["/bin/sh", "-c", "for i in $(seq 1 10);do echo $i;sleep 3;done"]

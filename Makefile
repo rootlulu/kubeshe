@@ -12,6 +12,18 @@ test:
 	sh ./test.sh
 	@echo
 
+
+createJob applyJob: deleteService
+	@echo "Creating Job: Wait for 20 seconds."
+	sh ./kubenets/examples/job/job.sh "apply" $(shell pwd)
+	@
+
+deleteJob: deleteService
+	@echo "Deleting Job."
+	-sh ./kubenets/examples/job/job.sh "delete"  $(shell pwd)
+	@
+
+
 createDs createDaemonSet applyDs applyDaemonSet: deleteService
 	@echo "Creating DaemonSet: Wait for 20 seconds."
 	sh ./kubenets/examples/daemonset/daemonSet.sh "apply" $(shell pwd)
@@ -19,7 +31,7 @@ createDs createDaemonSet applyDs applyDaemonSet: deleteService
 
 deleteDs deleteDaemonSet: deleteService
 	@echo "Deleting DaemonSet."
-	sh ./kubenets/examples/daemonset/daemonSet.sh "delete"  $(shell pwd)
+	-sh ./kubenets/examples/daemonset/daemonSet.sh "delete"  $(shell pwd)
 	@
 
 createSts createStatefulSet applySts applyStatefulSet: deleteService
@@ -29,7 +41,7 @@ createSts createStatefulSet applySts applyStatefulSet: deleteService
 
 deleteSts deleteStatefulSet: deleteService
 	@echo "Deleting StatefulSet."
-	sh ./kubenets/examples/statefulset/statefulSet.sh "delete"  $(shell pwd)
+	-sh ./kubenets/examples/statefulset/statefulSet.sh "delete"  $(shell pwd)
 	@
 
 createDeploy createDeployment applyDeploy applyDeployment: deleteService
@@ -39,7 +51,7 @@ createDeploy createDeployment applyDeploy applyDeployment: deleteService
 
 deleteDeploy deleteDeployment: deleteService
 	@echo "Deleting deployment."
-	sh ./kubenets/examples/deployment/deployment.sh "delete"  $(shell pwd)
+	-sh ./kubenets/examples/deployment/deployment.sh "delete"  $(shell pwd)
 	@
 
 createService createSvc applyService applySvc: createPod deleteService
