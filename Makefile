@@ -1,4 +1,13 @@
 ns=default
+ph_targets=(clean test \
+get getAll \
+createPod applyPod deletePod \
+createService createSvc applyService applySvc deleteService deleteSvc\
+createDeploy createDeployment applyDeploy applyDeployment deleteDeploy deleteDeployment \
+createSts createStatefulSet applySts applyStatefulSet deleteSts deleteStatefulSet\
+createDs createDaemonSet applyDs applyDaemonSet deleteDs deleteDaemonSet\
+createJob applyJob deleteJob\
+createCj createCronJob applyCj applyCronJob deleteCj deleteCronJob)
 
 # todo: the dependcies.
 get getAll:
@@ -12,6 +21,15 @@ test:
 	sh ./test.sh
 	@echo
 
+createCj createCronJob applyCj applyCronJob : deleteService
+	@echo "Creating CronJob: Wait for 20 seconds."
+	sh ./kubenets/examples/cronjob/cronjob.sh "apply" $(shell pwd)
+	@
+
+deleteCj deleteCronJob: deleteService
+	@echo "Deleting CronJob."
+	-sh ./kubenets/examples/cronjob/cronjob.sh "delete"  $(shell pwd)
+	@
 
 createJob applyJob: deleteService
 	@echo "Creating Job: Wait for 20 seconds."
@@ -22,7 +40,6 @@ deleteJob: deleteService
 	@echo "Deleting Job."
 	-sh ./kubenets/examples/job/job.sh "delete"  $(shell pwd)
 	@
-
 
 createDs createDaemonSet applyDs applyDaemonSet: deleteService
 	@echo "Creating DaemonSet: Wait for 20 seconds."
@@ -75,10 +92,7 @@ deletePod:
 	@echo
 
 
-.PHONY: clean test \
-get getAll \
-createPod applyPod deletePod \
-createService createSvc applyService applySvc deleteService deleteSvc
+.PHONY: $(ph_targets)
 
 clean:
 	-rm aaa

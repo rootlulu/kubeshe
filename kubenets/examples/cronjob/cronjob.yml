@@ -1,0 +1,31 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: busybox-ysm-cronjob
+  namespace: default
+  labels:
+    controller: cronjob
+spec:
+  schedule: "*/1 * * * *"
+  concurrencyPolicy: Forbid
+  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: 3
+  jobTemplate:
+    metadata: {}
+    spec:
+      completions: 1
+      parallelism: 1
+      activeDeadlineSeconds: 60
+      backoffLimit: 6
+      ttlSecondsAfterFinished: 10 # Don't delete the job until it finished 10s
+      template:
+        # metadata:
+        #   labels:
+        #     app: busybox-ysm-cronjob-pod
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: counter
+            image: busybox:1.30
+            # job will exist in 30s
+            command: ["/bin/sh", "-c", "for i in $(seq 1 10);do echo $i;sleep 3;done"]

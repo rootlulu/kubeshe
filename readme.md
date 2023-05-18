@@ -80,6 +80,22 @@ At the root path. run command:
     ```shell
     make <deleteDs | deleteDaemonSet>
     ```
+12. create a job
+    ```shell
+    make <applyJob | createJob>
+    ```
+13. delete a job
+    ```shell
+    make <deleteJob>
+    ```
+14. create a cronJob
+    ```shell
+    make <applyCj | applyCronJob | createCj | createCronjob>
+    ```
+15. delete a cronJob
+    ```shell
+    make <deleteCj | deleteCronJob>
+    ```
 
 for the example creating a service and its' pod:
 ![make createSvc](./pictures/example.png)
@@ -88,7 +104,7 @@ for the example creating a service and its' pod:
 1. [one click install k8s cluster](#a-nameoneclickone-click-install-k8s-mastera).
 2. add the func to test whether the k8s installed fail or success.
 3. set the kube-proxy mode to ipvs from iptables.
-4. [add the makefile for pod, service, deployment, statefulSet, daemonSet example](#a-namemakefilemakefile-for-k8s-examplesa).
+4. [add the makefile for pod, service, deployment, statefulSet, daemonSet ans other examples](#a-namemakefilemakefile-for-k8s-examplesa).
 
 
 ## todo
